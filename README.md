@@ -7,3 +7,5 @@ Este juego es una granja de dragones que contiene varios dragones y editar sus c
 - Express
 - EJS
 - Bootstrap
+
+## Desarrollo (en progreso)
