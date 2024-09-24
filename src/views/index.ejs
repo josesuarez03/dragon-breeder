@@ -4,20 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dragon Breeder</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> 
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
     <header>
-        <span>Dragon Breeder</span>
-        <nav class="navbar">
-            <ul class="item-nav">
-                <li href="/" class="link-nav">Inicio</li>
-                <li class="link-nav">Cambiar de dragones</li>
-                <li class="link-nav">Misiones</li>
-                <li class="link-nav">Luchar</li>
-            </ul>
+        <nav class="navbar navbar-expand-lg navbar-light bg-transparent">
+            <span>Dragon Breeder</span>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list"></i>
+            </button>
+        
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a href="/" class="nav-link">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/swap-dragon" class="nav-link">Cambiar Dragones</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/missions" class="nav-link">Misiones</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/battle" class="nav-link">Luchar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/battle" class="nav-link">Luchar</a>
+                    </li>
+                </ul>
+            </div>
         </nav>
     </header>
 
-    <%- body %>
+    <main>
+        <%- body %>
+    </main>
+
+    <footer id="sticky-footer" class="flex-shrink-0 py-4 bg-dark text-white-50">
+        <div class="container text-center">
+          <small>Copyright &copy; Dragon Breeder Company</small>
+        </div>
+    </footer>
 </body>
 </html>
