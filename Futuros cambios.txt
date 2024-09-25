@@ -1,0 +1,1 @@
+- Agregar un panel de gestion administrativo para modificar más facil la base de datos
