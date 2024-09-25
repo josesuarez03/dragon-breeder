@@ -2,7 +2,7 @@
 
 <div class="card">
     <div class="imageCard">
-        <!-- Mostrar imagen del dragón -->
+        
         <% if (character && character.imageUrl) { %>
             <img src="<%= character.imageUrl %>" alt="Imagen de <%= character.name %>" class="dragon-image">
         <% } else { %>
@@ -15,7 +15,7 @@
             <h2 class="name-character"><%= character.name %></h2>
             <span class="type-dragon"><%= character.type %></span>
 
-            <!-- Atributos del dragón -->
+            
             <ul class="table-attributes">
                 <li class="attributesItem">
                     <span class="energyLevel"><%= character.energyLevel %> ⚡</span>
@@ -28,7 +28,7 @@
                 </li>
             </ul>
 
-            <!-- Botones de acciones -->
+            
             <div class="action-buttons">
                 <button class="btn-feed" onclick="feedDragon('<%= character.id %>')">Dar de Comer</button>
                 <button class="btn-heal" onclick="healDragon('<%= character.id %>')">Sanar</button>
