@@ -43,3 +43,40 @@ exports.updateEnergy = (req, res) => {
     characterModel.saveCharacter(character); // Guardar el estado actualizado del personaje
     res.json({ energyLevel: character.energyLevel }); // Responder con el nuevo nivel de energía
 };
+
+exports.index = (req, res) => {
+    // Aquí verificamos si hay un personaje seleccionado
+    const selectedCharacter = req.session.selectedCharacter; // Suponemos que el personaje se almacena en la sesión
+
+    if (!selectedCharacter) {
+        // Si no hay personaje, redirigimos al randomizador de huevos
+        return res.redirect('/box-eggs');
+    }
+
+    // Si hay un personaje, mostramos la vista principal del juego
+    res.render('game', {
+        title: 'Dragon Breeder Game',
+        character: selectedCharacter
+    });
+};
+
+exports.eggRandomizer = (req, res) => {
+    const egg = getRandomEgg(); // Función que selecciona un huevo aleatorio
+    res.render('characters/box-eggs', { egg });
+};
+
+// Función para seleccionar un huevo al azar
+function getRandomEgg() {
+    const random = Math.random() * 100;
+
+    if (random <= 25) {
+        return 'blackDragon';  // Dragón negro
+    } else if (random <= 50) {
+        return 'greenDragon';  // Dragón verde
+    } else if (random <= 75) {
+        return 'orangeDragon'; // Dragón naranja
+    } else {
+        return 'chicken';      // Gallina
+    }
+}
+

@@ -1,29 +1,36 @@
-    <h1> Huevos Randomizer</h1>
-        <div class="box-eggs" onclick="openbox()">
-            <span>Haz click para abrir la caja</span>
-        </div>
-
-        <script>
-            function openbox() {
-                const selectecEgg = <%= selectecEgg %>;
-                const eggElement = document.getElementById("egg");
-                eggElement.style.display = "block";
-
-                switch(selectecEgg){
-                    case 1:
-                        eggElement.src=""
-                        break;
-                    case 2:
-                        eggElement.src=""
-                        break;
-                    case 3:
-                        eggElement.src=""
-                        break;
-                    case 4:
-                        eggElement.src=""
-                        break;
-                }
-            }
-        </script>
-    
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecciona un huevo</title>
+    <style>
+        .egg-box {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .egg-box img {
+            width: 200px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>¡Es hora de seleccionar un huevo!</h1>
+    <div class="egg-box">
+        <% if (egg === 'blackDragon') { %>
+            <img src="/sprites/blackDragon/egg.png" alt="Huevo de dragón negro">
+            <p>Has seleccionado el huevo del Dragón Negro.</p>
+        <% } else if (egg === 'greenDragon') { %>
+            <img src="/sprites/greenDragon/egg.png" alt="Huevo de dragón verde">
+            <p>Has seleccionado el huevo del Dragón Verde.</p>
+        <% } else if (egg === 'orangeDragon') { %>
+            <img src="/sprites/orangeDragon/egg.png" alt="Huevo de dragón naranja">
+            <p>Has seleccionado el huevo del Dragón Naranja.</p>
+        <% } else { %>
+            <img src="/sprites/chicken/egg.png" alt="Huevo de gallina">
+            <p>Has seleccionado un huevo... ¡pero es una gallina!</p>
+        <% } %>
+    </div>
+</body>
+</html>
