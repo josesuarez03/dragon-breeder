@@ -3,6 +3,8 @@ const path = require('path');
 
 const dragonsFile = path.join(__dirname, '../data/dragons.json')
 
+const eggProbabilityHatch
+
 const getAllDragons = () => {
     return JSON.parse(fs.readFileSync(dragonsFilePath, 'utf-8'));
 };
