@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const dragonsFile = path.join(__dirname, '../data/dragons.json')
+const dragonsFilePath = path.join(__dirname, '../data/dragons.json')
 
 const eggProbabilityHatch = 0.8;
 
