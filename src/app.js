@@ -1,40 +1,39 @@
 const express = require('express');
+const path = require('path');
 const bodyParser = require('body-parser');
-const expressLayouts = require('express-ejs-layouts');
-const characterController = require('./controllers/characterController');
-const gameController = require('./controllers/gameController'); 
-const { saveCharacters } = require('./models/characterModel');
+const logger = require('morgan');
+
+// Importar las rutas
+const gameRoutes = require('./src/routes/gameRoutes');
+
 const app = express();
-const PORT = 3000;
 
+// Configuración del logger (opcional, útil para desarrollo)
+app.use(logger('dev'));
+
+// Configuración del parser para los cuerpos de las solicitudes
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+// Configuración del motor de plantillas EJS
+app.set('views', path.join(__dirname, 'src', 'views'));
 app.set('view engine', 'ejs');
-app.use(expressLayouts);
-app.set('layout', 'layout');
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json()); // Permitir JSON en el cuerpo de las solicitudes
-app.use(express.static('public'));
+// Configuración de la carpeta estática para servir imágenes, estilos, etc.
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Root route
-app.get('/', (req, res) => {
-    res.redirect('/game');
+// Configuración de las rutas
+app.use('/', gameRoutes);
+
+// Manejar errores 404 (página no encontrada)
+app.use((req, res, next) => {
+    res.status(404).send('Página no encontrada');
 });
 
-// CRUD routes for characters
-app.get('/characters', characterController.index);
-app.get('/characters/new', characterController.create);
-app.post('/characters', characterController.store);
-app.get('/characters/:id/edit', characterController.edit);
-app.post('/characters/:id/update', characterController.update);
-app.post('/characters/:id/delete', characterController.delete);
-
-// Game routes
-app.get('/game', gameController.view);
-app.get('/game/select', gameController.select);
-app.post('/game/select', gameController.chooseCharacter);
-app.put('/game/update', gameController.updateEnergy); 
-
-
+// Iniciar el servidor en el puerto deseado
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
+module.exports = app;
