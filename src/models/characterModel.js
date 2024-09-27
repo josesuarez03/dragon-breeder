@@ -3,7 +3,7 @@ const path = require('path');
 
 const dragonsFile = path.join(__dirname, '../data/dragons.json')
 
-const eggProbabilityHatch
+const eggProbabilityHatch = 0.8;
 
 const getAllDragons = () => {
     return JSON.parse(fs.readFileSync(dragonsFilePath, 'utf-8'));
@@ -33,6 +33,9 @@ const checkAvalaibleBattleDragon = (dragon) => {
         return true;
     }
 };
+
+
+const breedDragons = (dragon1, dragon2, dragon3)
 
 const regenerateAttributes = (dragon, action) => {
 
