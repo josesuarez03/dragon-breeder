@@ -80,3 +80,26 @@ function getRandomEgg() {
     }
 }
 
+exports.swapDragon = (req, res) => {
+    // Supongamos que los dragones del usuario están almacenados en la sesión (podría estar en la base de datos)
+    const userDragons = req.session.userDragons || [];
+
+    // Si el usuario no tiene dragones, redirigimos al randomizador
+    if (userDragons.length === 0) {
+        return res.redirect('/box-eggs');
+    }
+
+    // Mostrar la página con los dragones disponibles
+    res.render('characters/swap-dragon', { userDragons });
+};
+
+exports.selectDragon = (req, res) => {
+    const selectedDragon = req.body.dragon; // Obtenemos el dragón seleccionado del formulario
+
+    // Guardamos el dragón seleccionado en la sesión como el dragón activo
+    req.session.selectedCharacter = selectedDragon;
+
+    // Redirigimos a la página principal o donde sea necesario
+    res.redirect('/');
+};
+
