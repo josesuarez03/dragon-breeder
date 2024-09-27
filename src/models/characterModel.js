@@ -3,6 +3,9 @@ const path = require('path');
 
 const dragonsFilePath = path.join(__dirname, '../data/dragons.json')
 
+const DragonSprite = path.join(__dirname, '../public/sprites/dragons');
+const eggsSprite = path.join(__dirname, '../public/sprites/eggs');
+
 const eggProbabilityHatch = 0.8;
 
 const getAllDragons = () => {
