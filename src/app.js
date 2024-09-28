@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const logger = require('morgan');
 
 // Importar las rutas
-const gameRoutes = require('./src/routes/gameRoutes');
+const gameRoutes = require('../src/routes/gameRoutes');
 
 const app = express();
 
@@ -27,7 +27,7 @@ app.use('/', gameRoutes);
 
 // Manejar errores 404 (página no encontrada)
 app.use((req, res, next) => {
-    res.status(404).send('Página no encontrada');
+    res.status(404).sendFile(path.join(__dirname, 'public/html', '404.html'));
 });
 
 // Iniciar el servidor en el puerto deseado

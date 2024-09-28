@@ -11,14 +11,38 @@ exports.create = (req, res) => {
 
 exports.store = (req, res) => {
     const characters = characterModel.getAllCharacters();
+
+    // Crear un nuevo personaje con los atributos enviados en la solicitud
     const newCharacter = {
-        id: characters.length + 1,
-        name: req.body.name,
-        energyLevel: req.body.energyLevel,
-        lifeExpectancy: req.body.lifeExpectancy
+        id: characters.length + 1, // Asignar ID basado en la longitud actual
+        name: req.body.name,       // Nombre del dragón
+        hungry: parseFloat(req.body.hungry),    // Nivel de hambre
+        energy: parseFloat(req.body.energy),    // Nivel de energía
+        health: parseFloat(req.body.health),    // Nivel de salud
+        speed: parseFloat(req.body.speed),      // Velocidad
+        agility: parseFloat(req.body.agility),  // Agilidad
+        strength: parseFloat(req.body.strength),// Fuerza
+        specialAbilities: req.body.specialAbilities === 'true', // Habilidades especiales
+        intelligence: parseFloat(req.body.intelligence), // Inteligencia
+        defense: parseFloat(req.body.defense), // Defensa
+        attack: parseFloat(req.body.attack),   // Ataque
+        stage: req.body.stage, // mini o adulto
+        imageUrl: req.body.imageUrl || `/public/sprites/dragons/default-dragon.png`, // URL de la imagen
+        availableForBattle: characterModel.checkAvailableForBattle({ // Comprobar si puede luchar
+            hungry: req.body.hungry,
+            energy: req.body.energy,
+            health: req.body.health,
+            stage: req.body.stage
+        })
     };
+
+    // Agregar el nuevo dragón a la lista
     characters.push(newCharacter);
+
+    // Guardar la lista de dragones actualizada
     characterModel.saveCharacters(characters);
+
+    // Redireccionar a la página de personajes
     res.redirect('/characters');
 };
 

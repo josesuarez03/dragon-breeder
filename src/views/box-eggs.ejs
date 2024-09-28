@@ -1,0 +1,16 @@
+<h1>¡Es hora de seleccionar un huevo!</h1>
+    <div class="egg-box">
+        <% if (egg === 'blackDragon') { %>
+            <img src="dragon-breeder\public\sprites\eggs\egg3.png" alt="Huevo de dragón negro">
+            <p>Has seleccionado el huevo del Dragón Negro.</p>
+        <% } else if (egg === 'greenDragon') { %>
+            <img src="dragon-breeder\public\sprites\eggs\egg.png" alt="Huevo de dragón verde">
+            <p>Has seleccionado el huevo del Dragón Verde.</p>
+        <% } else if (egg === 'orangeDragon') { %>
+            <img src="dragon-breeder\public\sprites\eggs\egg2.png" alt="Huevo de dragón naranja">
+            <p>Has seleccionado el huevo del Dragón Naranja.</p>
+        <% } else { %>
+            <img src="dragon-breeder\public\sprites\eggs\egg4.png" alt="Huevo de gallina">
+            <p>Has seleccionado un huevo... ¡pero es una gallina!</p>
+        <% } %>
+    </div>

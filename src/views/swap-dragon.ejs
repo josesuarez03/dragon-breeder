@@ -1,0 +1,12 @@
+<h1>Selecciona tu Dragón</h1>
+<form action="/swap-dragon" method="POST">
+    <div class="dragon-list">
+        <% userDragons.forEach(function(dragon) { %>
+            <div class="dragon-item">
+                <img src="/sprites/<%= dragon %>/egg.png" alt="<%= dragon %>">
+                <p><%= dragon %></p>
+                <button type="submit" name="dragon" value="<%= dragon %>">Seleccionar</button>
+            </div>
+        <% }) %>
+    </div>
+</form>
