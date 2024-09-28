@@ -2,7 +2,7 @@ const characterModel = require('../models/characterModel');
 
 exports.index = (req, res) => {
     const characters = characterModel.getAllCharacters();
-    res.render('characters/index', { characters });
+    res.render('characters/characters', { characters });
 };
 
 exports.create = (req, res) => {
@@ -47,7 +47,7 @@ exports.store = (req, res) => {
 };
 
 exports.edit = (req, res) => {
-    const character = characterModel.findCharacterById(parseInt(req.params.id));
+    const character = characterModel.findDragonById(parseInt(req.params.id));
     res.render('characters/edit', { character });
 };
 

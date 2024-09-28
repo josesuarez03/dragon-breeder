@@ -18,7 +18,7 @@ exports.chooseCharacter = (req, res) => {
 
 exports.view = (req, res) => {
     const gameState = gameModel.getGameState();
-    const character = characterModel.findDragonById(gameState.characterId); 
+    const character = characterModel.findCharacterById(gameState.characterId); 
     res.render('game', { character });
 };
 
@@ -38,7 +38,7 @@ exports.index = (req, res) => {
 // Randomizador de huevos
 exports.eggRandomizer = (req, res) => {
     const egg = getRandomEgg(); 
-    res.render('characters/box-eggs', { egg });
+    res.render('box-eggs', { egg });
 };
 
 function getRandomEgg() {
@@ -117,7 +117,7 @@ exports.swapDragon = (req, res) => {
         return res.redirect('/box-eggs');
     }
 
-    res.render('characters/swap-dragon', { userDragons });
+    res.render('swap-dragon', { userDragons });
 };
 
 exports.selectDragon = (req, res) => {
