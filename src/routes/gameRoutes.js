@@ -12,4 +12,6 @@ router.get('/box-eggs', gameController.eggRandomizer);
 router.get('/swap-dragon', gameController.swapDragon);
 router.post('/swap-dragon', gameController.selectDragon);
 
+router
+
 module.exports = router;

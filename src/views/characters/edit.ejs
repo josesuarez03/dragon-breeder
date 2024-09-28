@@ -1,8 +1,46 @@
 <h1>Editar Personaje</h1>
 <form action="/characters/<%= character.id %>/update" method="post">
-    <label for="name">Nombre:</label>
-    <input type="text" id="name" name="name" value="<%= character.name %>" required><br>
-    <label for="energyLevel">Nivel de Energía:</label>
-    <input type="number" id="energyLevel" name="energyLevel" value="<%= character.energyLevel %>" required><br>
-    <button type="submit">Actualizar</button>
+    <label for="name">Nombre</label>
+    <input type="text" name="name" required>
+
+    <label for="hungry">Hambre</label>
+    <input type="number" name="hungry" step="0.1" required>
+
+    <label for="energy">Energía</label>
+    <input type="number" name="energy" step="0.1" required>
+
+    <label for="health">Salud</label>
+    <input type="number" name="health" step="0.1" required>
+
+    <label for="speed">Velocidad</label>
+    <input type="number" name="speed" step="0.1" required>
+
+    <label for="agility">Agilidad</label>
+    <input type="number" name="agility" step="0.1" required>
+
+    <label for="strength">Fuerza</label>
+    <input type="number" name="strength" step="0.1" required>
+
+    <label for="intelligence">Inteligencia</label>
+    <input type="number" name="intelligence" step="0.1" required>
+
+    <label for="defense">Defensa</label>
+    <input type="number" name="defense" step="0.1" required>
+
+    <label for="attack">Ataque</label>
+    <input type="number" name="attack" step="0.1" required>
+
+    <label for="specialAbilities">Habilidades Especiales</label>
+    <input type="checkbox" name="specialAbilities" value="true">
+
+    <label for="stage">Stage</label>
+    <select name="stage" required>
+        <option value="mini">Mini</option>
+        <option value="adult">Adult</option>
+    </select>
+
+    <label for="imageUrl">Imagen URL (opcional)</label>
+    <input type="text" name="imageUrl">
+
+    <button type="submit">Crear Dragón</button>
 </form>
