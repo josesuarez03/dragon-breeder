@@ -125,5 +125,6 @@ exports.selectDragon = (req, res) => {
 
     req.session.selectedCharacter = selectedDragon;
 
-    res.redirect('/');
+    res.redirect('/game');
 };
+
