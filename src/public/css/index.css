@@ -7,3 +7,10 @@ main{
     height: 100vh;
 }
 
+header{
+    padding: 30px;
+}
+
+span{
+    font-size: 1.8em;
+}

@@ -1,42 +1,45 @@
-<h1>Granja de Dragones</h1>
+<div class="container">
+    <h1>Granja de Dragones</h1>
 
-<div class="card">
-    <div class="imageCard">
+    <div class="card">
+        <div class="imageCard">
+            
+            <% if (character && character.imageUrl) { %>
+                <img src="<%= character.imageUrl %>" alt="Imagen de <%= character.name %>" class="dragon-image">
+            <% } else { %>
+                <img src="/sprites/dragons/adult-dragon.png" alt="Imagen del dragón" class="dragon-image">
+            <% } %>
+
+            <div class="cardContent">
+                <% if (character) { %>
+                    <h2 class="name-character"><%= character.name %></h2>
+                    <span class="type-dragon"><%= character.type %></span>
         
-        <% if (character && character.imageUrl) { %>
-            <img src="<%= character.imageUrl %>" alt="Imagen de <%= character.name %>" class="dragon-image">
-        <% } else { %>
-            <img src="/path/to/default-dragon.jpg" alt="Imagen del dragón" class="dragon-image">
-        <% } %>
-
-        <div class="cardContent"></div>
-
-        <% if (character) { %>
-            <h2 class="name-character"><%= character.name %></h2>
-            <span class="type-dragon"><%= character.type %></span>
-
-            
-            <ul class="table-attributes">
-                <li class="attributesItem">
-                    <span class="energyLevel"><%= character.energyLevel %> ⚡</span>
-                </li>
-                <li class="attributesItem">
-                    <span class="healthLevel"><%= character.healthLevel %> ❤️</span>
-                </li>
-                <li class="attributesItem">
-                    <span class="availableBattle"><%= character.availableBattle ? 'Disponible para luchar' : 'No disponible para luchar' %></span>
-                </li>
-            </ul>
-
-            
-            <div class="action-buttons">
-                <button class="btn-feed" onclick="feedDragon('<%= character.id %>')">Dar de Comer</button>
-                <button class="btn-heal" onclick="healDragon('<%= character.id %>')">Sanar</button>
-                <button class="btn-battle" onclick="startBattle('<%= character.id %>')" <%= !character.availableBattle ? 'disabled' : '' %>>Luchar</button>
+                    
+                    <ul class="table-attributes">
+                        <li class="attributesItem">
+                            <span class="energyLevel"><%= character.energyLevel %> ⚡</span>
+                        </li>
+                        <li class="attributesItem">
+                            <span class="healthLevel"><%= character.healthLevel %> ❤️</span>
+                        </li>
+                        <li class="attributesItem">
+                            <span class="availableBattle"><%= character.availableBattle ? 'Disponible para luchar' : 'No disponible para luchar' %></span>
+                        </li>
+                    </ul>
+        
+                    
+                    <div class="action-buttons">
+                        <button class="btn-feed" onclick="feedDragon('<%= character.id %>')">Dar de Comer</button>
+                        <button class="btn-heal" onclick="healDragon('<%= character.id %>')">Sanar</button>
+                        <button class="btn-battle" onclick="startBattle('<%= character.id %>')" <%= !character.availableBattle ? 'disabled' : '' %>>Luchar</button>
+                    </div>
+                <% } %>
             </div>
-        <% } %>
+        </div>
     </div>
 </div>
+
 
 <script>
     function feedDragon(dragonId) {
