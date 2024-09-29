@@ -1,0 +1,19 @@
+.egg-box {
+    display: flex;
+    flex-direction: column;     
+    align-items: center;        
+    padding: 20px;
+}
+
+.egg-box img {
+    border-radius: 10px;      
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    width: 200px;           
+    margin-bottom: 20px; 
+    overflow: hidden;   
+}
+
+.egg-box p {
+    font-size: 1.2em;
+    margin: 20px 0;
+}

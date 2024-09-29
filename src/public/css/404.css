@@ -1,0 +1,79 @@
+/* General reset to remove default padding/margin */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body styling */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;               /* Full viewport height */
+    font-family: 'Arial', sans-serif;
+    background-color: #f7f7f7;    /* Light background */
+    color: #333;                 /* Text color */
+    text-align: center;          /* Center text */
+    flex-direction: column;
+}
+
+/* Header styling */
+header h1 {
+    font-size: 3em;
+    color: #e74c3c;              /* Red for 404 error */
+    margin-bottom: 20px;
+}
+
+/* Section styling */
+main section {
+    background-color: #fff;       /* White background for content */
+    padding: 40px;
+    border-radius: 10px;          /* Rounded corners */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    max-width: 600px;             /* Limit section width */
+    width: 100%;                  /* Make section responsive */
+}
+
+/* Subheading */
+main section h2 {
+    font-size: 2em;
+    color: #2c3e50;              /* Darker text for contrast */
+    margin-bottom: 15px;
+}
+
+/* Paragraph and link styling */
+main section p {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+}
+
+main section a {
+    color: #3498db;              /* Blue link */
+    text-decoration: none;
+    font-weight: bold;
+    border: 2px solid #3498db;   /* Border for button effect */
+    padding: 10px 20px;
+    border-radius: 5px;          /* Rounded button */
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth hover effect */
+}
+
+main section a:hover {
+    background-color: #3498db;   /* Blue background on hover */
+    color: #fff;                 /* White text on hover */
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 600px) {
+    header h1 {
+        font-size: 2.5em;
+    }
+
+    main section h2 {
+        font-size: 1.8em;
+    }
+
+    main section {
+        padding: 30px;
+    }
+}
