@@ -25,4 +25,5 @@ router.post('/characters/:id/update', characterController.update);
 router.post('/characters/:id/delete', characterController.delete);
 
 
+
 module.exports = router;

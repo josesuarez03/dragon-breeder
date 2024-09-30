@@ -28,22 +28,14 @@ exports.store = (req, res) => {
         attack: parseFloat(req.body.attack),   // Ataque
         stage: req.body.stage, // mini o adulto
         imageUrl: req.body.imageUrl || `/public/sprites/dragons/default-dragon.png`, // URL de la imagen
-        availableForBattle: characterModel.checkAvailableForBattle({ // Comprobar si puede luchar
-            hungry: req.body.hungry,
-            energy: req.body.energy,
-            health: req.body.health,
-            stage: req.body.stage
-        })
-    };
+        availableForBattle: false
+     };
 
-    // Agregar el nuevo dragón a la lista
-    characters.push(newCharacter);
+    const dragons = characterModel.getAllCharacters();
+    dragons.push(newCharacter);
+    characterModel.saveCharacters(dragons);
 
-    // Guardar la lista de dragones actualizada
-    characterModel.saveCharacters(characters);
-
-    // Redireccionar a la página de personajes
-    res.redirect('/characters');
+    res.redirect('/characters')
 };
 
 exports.edit = (req, res) => {

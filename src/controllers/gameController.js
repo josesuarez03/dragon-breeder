@@ -111,14 +111,36 @@ exports.openMysteryBox = (req, res) => {
 
 
 exports.swapDragon = (req, res) => {
-    const userDragons = req.session.userDragons || [];
-
-    if (userDragons.length === 0) {
-        return res.redirect('/box-eggs');
+    if (!req.session) {
+      req.session = {};
     }
-
+  
+    if (!req.session.userDragons) {
+      req.session.userDragons = [];
+    }
+  
+    const userDragons = req.session.userDragons;
+  
+    if (userDragons.length === 0) {
+      return res.redirect('/box-eggs');
+    }
+  
     res.render('swap-dragon', { userDragons });
 };
+
+exports.createDragon = (req, res) => {
+    const newDragon = {
+      // ...
+    };
+  
+    if (!req.session.userDragons) {
+      req.session.userDragons = [];
+    }
+  
+    req.session.userDragons.push(newDragon);
+  
+    res.redirect('/swap-dragon');
+  };
 
 exports.selectDragon = (req, res) => {
     const selectedDragon = req.body.dragon;
