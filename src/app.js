@@ -29,6 +29,13 @@ app.use((req, res, next) => {
     res.status(404).sendFile(path.join(__dirname, 'public/html', '404.html'));
 });
 
+app.post('/game/select', (req, res) => {
+    const characterId = req.body.characterId;
+    // Aquí puedes guardar el personaje seleccionado en una sesión o en una variable global
+    req.session.selectedCharacter = characterId;
+    res.redirect('/'); // Redirige al index
+});
+
 // Iniciar el servidor en el puerto deseado
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

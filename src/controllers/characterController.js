@@ -27,7 +27,7 @@ exports.store = (req, res) => {
         defense: parseFloat(req.body.defense), // Defensa
         attack: parseFloat(req.body.attack),   // Ataque
         stage: req.body.stage, // mini o adulto
-        imageUrl: req.body.imageUrl || `/public/sprites/dragons/default-dragon.png`, // URL de la imagen
+        imageUrl: req.body.imageUrl, // URL de la imagen
         availableForBattle: false
      };
 

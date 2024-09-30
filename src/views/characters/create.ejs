@@ -40,8 +40,13 @@
         <option value="adult">Adult</option>
     </select>
 
-    <label for="imageUrl">Imagen URL (opcional)</label>
-    <input type="text" name="imageUrl">
+    <label for="imageUrl">Imagen</label>
+    <select name="imageUrl" required>
+        <% const dragonImages = ['chicken.png', 'mini-dragon.png', 'mini-dragon2.png', 'mini-dragon3.png']; %>
+        <% dragonImages.forEach((image) => { %>
+        <option value="/sprites/dragons/<%= image %>"><%= image %></option>
+        <% }); %>
+    </select>
 
     <button type="submit">Crear Dragón</button>
 </form>
