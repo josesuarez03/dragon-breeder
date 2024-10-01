@@ -232,7 +232,7 @@ const evolveDragon = (dragonId) => {
             const evolvedDragon = {
                 ...dragon,
                 stage: 'mini',
-                imageUrl: selectMiniDragonImage(), 
+                imageUrl: `/public/sprites/dragons/${selectDragonImage()}`, 
                 hungry: 0, 
             };
 
@@ -256,7 +256,7 @@ const evolveDragon = (dragonId) => {
             const evolvedDragon = {
                 ...dragon,
                 stage: 'adult',
-                imageUrl: selectDragonImage(),  // Change the image
+                imageUrl: `/public/sprites/dragons/${selectDragonImage()}`,
                 energy: Math.max(dragon.energy - 10, 0),  // Reduce energy
                 hungry: Math.max(dragon.hungry - 10, 0),  // Reduce hunger
                 health: Math.max(dragon.health - 10, 0),  // Reduce health
