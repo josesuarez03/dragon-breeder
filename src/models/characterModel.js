@@ -157,29 +157,6 @@ const breedDragons = (dragon1, dragon2) => {
     }
 };*/
 
-// Generate a dragon with random characteristics
-const generateRandomDragon = (miniDragon) => {
-    if (miniDragon.stage === 'mini') {
-        return {
-            id: Date.now(),
-            name: `Dragon ${Math.floor(Math.random() * 1000)}`,
-            hungry: Math.random() * 100,
-            energy: Math.random() * 100,
-            health: Math.random() * 100,
-            speed: Math.floor(Math.random() * 100),
-            agility: Math.floor(Math.random() * 100),
-            strength: Math.floor(Math.random() * 100),
-            specialAbilities: Math.random() > 0.5,
-            intelligence: Math.floor(Math.random() * 100),
-            defense: Math.floor(Math.random() * 100),
-            attack: Math.floor(Math.random() * 100),
-            availableForBattle: checkAvailableForBattle(miniDragon),
-            imageUrl: `/public/sprites/dragons/${selectDragonImage()}`,
-            stage: 'adult'
-        };
-    }
-};
-
 const openMysteryBox = () => {
     const randomDragon = {
         id: Date.now(),
@@ -279,6 +256,29 @@ const evolveDragon = (dragonId) => {
 
     return null;  // Could not evolve
 };
+
+// Generate a dragon with random characteristics
+const generateRandomDragon = (adultDragon) => {
+    if (adultDragon.stage === 'adult') {
+        return {
+            id: Date.now(),
+            name: `Dragon ${Math.floor(Math.random() * 1000)}`,
+            hungry: Math.random() * 100,
+            energy: Math.random() * 100,
+            health: Math.random() * 100,
+            speed: Math.floor(Math.random() * 100),
+            agility: Math.floor(Math.random() * 100),
+            strength: Math.floor(Math.random() * 100),
+            specialAbilities: Math.random() > 0.5,
+            intelligence: Math.floor(Math.random() * 100),
+            defense: Math.floor(Math.random() * 100),
+            attack: Math.floor(Math.random() * 100),
+            availableForBattle: checkAvailableForBattle(adultDragon),
+            imageUrl: `/public/sprites/dragons/${selectDragonImage()}`,
+            stage: 'adult'
+        };
+    }
+  };
 
 
 // Dragon model functions

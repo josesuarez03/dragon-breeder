@@ -1,0 +1,41 @@
+<h1>Arena de Combate</h1>
+
+<h2>Tu Dragón:</h2>
+<p>Nombre: <%= playerDragon.name %></p>
+<p>Vida: <%= playerLife %></p>
+<p>Nivel de hambre: <%= playerDragon.hungry %></p>
+<p>Nivel de energía: <%= playerDragon.energy %></p>
+<p>Nivel de salud: <%= playerDragon.health %></p>
+<p>Velocidad: <%= playerDragon.speed %></p>
+<p>Agilidad: <%= playerDragon.agility %></p>
+<p>Fuerza: <%= playerDragon.strength %></p>
+<p>Habilidades especiales: <%= playerDragon.specialAbilities %></p>
+<p>Inteligencia: <%= playerDragon.intelligence %></p>
+<p>Defensa: <%= playerDragon.defense %></p>
+<p>Ataque: <%= playerDragon.attack %></p>
+
+<h2>Dragón de la Máquina:</h2>
+<p>Nombre: <%= machineDragon.name %></p>
+<p>Vida: <%= machineLife %></p>
+<p>Nivel de hambre: <%= machineDragon.hungry %></p>
+<p>Nivel de energía: <%= machineDragon.energy %></p>
+<p>Nivel de salud: <%= machineDragon.health %></p>
+<p>Velocidad: <%= machineDragon.speed %></p>
+<p>Agilidad: <%= machineDragon.agility %></p>
+<p>Fuerza: <%= machineDragon.strength %></p>
+<p>Habilidades especiales: <%= machineDragon.specialAbilities %></p>
+<p>Inteligencia: <%= machineDragon.intelligence %></p>
+<p>Defensa: <%= machineDragon.defense %></p>
+<p>Ataque: <%= machineDragon.attack %></p>
+
+<form action="/characters/<%= playerDragon.id %>/special-attack" method="post">
+  <input type="hidden" name="playerLife" value="<%= playerLife %>">
+  <input type="hidden" name="machineLife" value="<%= machineLife %>">
+  <button type="submit">Ataque Especial</button>
+</form>
+
+<form action="/characters/<%= playerDragon.id %>/normal-attack" method="post">
+  <input type="hidden" name="playerLife" value="<%= playerLife %>">
+  <input type="hidden" name="machineLife" value="<%= machineLife %>">
+  <button type="submit">Ataque Normal</button>
+</form>

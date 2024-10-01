@@ -2,9 +2,9 @@
   {
     "id": 1,
     "name": "jose",
-    "hungry": 73,
-    "energy": 73,
-    "health": 90,
+    "hungry": 57,
+    "energy": 57,
+    "health": 100,
     "speed": 30,
     "agility": 30,
     "strength": 30,

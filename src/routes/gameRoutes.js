@@ -27,5 +27,10 @@ router.post('/characters/:id/delete', characterController.delete);
 
 router.post('/dragon/:id/action', gameController.regenerateAttributes);
 
+// Ruta para combatir
+router.get('/characters/:id/battle', characterController.battle);
+router.post('/characters/:id/special-attack', characterController.specialAttack);
+router.post('/characters/:id/normal-attack', characterController.normalAttack);
+
 
 module.exports = router;
