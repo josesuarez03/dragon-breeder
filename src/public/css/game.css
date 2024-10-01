@@ -1,36 +1,129 @@
+/* Ajuste para el contenedor principal */
 .container {
     display: flex;
     justify-content: center;  
-    align-items: center;      
-    height: 80vh;            
+    align-items: center;            
     text-align: center; 
-    flex-direction: column;   
+    flex-direction: column;
+    background-size: cover; /* Imagen de fondo que cubre todo */
+    padding: 20px;
+    border-radius: 15px; /* Suavizar bordes del contenedor */
+    overflow: hidden; /* Asegura que el contenido no se desborde */
+    height: 100vh;
 }
 
+/* Ajuste para la tarjeta de personaje (dragón) */
 .card {
-    width: 250px;          
-    background-color: #fff;   
-    border-radius: 10px;      
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    width: 50%;
+    background-color: #2c3e50; /* Color oscuro */
+    border: 2px solid #c0392b; /* Borde rojo oscuro */
+    border-radius: 15px;      
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5); /* Sombra para darle profundidad */
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px;
-    margin: 0;               
+    padding: 20px;
+    margin: 20px;
+    overflow: hidden; /* Asegura que el contenido no se desborde */
+    color: #ecf0f1; /* Texto claro */
+    
 }
 
+/* Ajuste para el contenido de la tarjeta */
 .cardContent {
     padding: 10px;
     text-align: center;
+    width: 100%;             
 }
 
+/* Estilo para la imagen del dragón */
 .imageCard img {
     width: 100%;             
-    height: 150px;           
+    height: 180px;           
     object-fit: cover;       
+    border-bottom: 2px solid #c0392b; /* Línea decorativa */
 }
 
-h1{
-    font-size: 1.8em;    
-    padding: 20px;
+/* Ajuste para los nombres y tipos del personaje */
+.name-character {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #e74c3c; /* Rojo oscuro */
+    margin-bottom: 5px;
 }
+
+.type-dragon {
+    font-size: 1.2em;
+    color: #f1c40f; /* Amarillo dorado */
+    font-style: italic;
+    margin-bottom: 10px;
+}
+
+/* Ajuste de la tabla de atributos */
+.table-attributes {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0;
+    margin: 10px 0;
+    width: 100%; /* Ajuste de ancho para que ocupe el 100% */
+    overflow: hidden;
+}
+
+/* Cada ítem de atributo tiene menos margen para evitar el desbordamiento */
+.attributesItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 1.2em;
+    margin: 0 5px;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #34495e; /* Fondo oscuro */
+    border: 1px solid #e74c3c; /* Borde rojo */
+    width: 30%; /* Asegura que los elementos ocupen el 30% cada uno */
+}
+
+/* Estilos específicos para niveles */
+.energyLevel {
+    color: #f39c12; /* Dorado para el nivel de energía ⚡ */
+}
+
+.healthLevel {
+    color: #e74c3c; /* Rojo para el nivel de salud ❤️ */
+}
+
+.availableBattle {
+    color: #2ecc71; /* Verde si está disponible */
+}
+
+/* Ajustar el contenedor para los botones fuera de la tarjeta */
+.action-buttons {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    width: 320px; /* Ajustar este ancho al mismo de la tarjeta */
+    margin: 0 auto; /* Centrar los botones */
+}
+
+.action-buttons button {
+    background-color: #e74c3c; /* Rojo intenso */
+    color: white;
+    border: 2px solid #c0392b;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 1.1em;
+    cursor: pointer;
+    width: 30%;
+    transition: background-color 0.3s ease;
+}
+
+.action-buttons button:hover {
+    background-color: #c0392b;
+}
+
+.action-buttons .btn-battle[disabled] {
+    background-color: #7f8c8d; /* Gris si está deshabilitado */
+    cursor: not-allowed;
+}
+
