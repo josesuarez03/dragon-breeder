@@ -99,11 +99,14 @@
 
 /* Ajustar el contenedor para los botones fuera de la tarjeta */
 .action-buttons {
-    margin-top: 15px;
+    margin-top: 20px;
     display: flex;
-    justify-content: space-between;
-    width: 320px; /* Ajustar este ancho al mismo de la tarjeta */
-    margin: 0 auto; /* Centrar los botones */
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 600px; /* Ajustar al ancho máximo de la tarjeta */
+    margin-bottom: 30px;
 }
 
 .action-buttons button {
@@ -111,10 +114,12 @@
     color: white;
     border: 2px solid #c0392b;
     border-radius: 10px;
-    padding: 10px;
-    font-size: 1.1em;
+    padding: 10px 15px;
+    font-size: 1em;
     cursor: pointer;
-    width: 30%;
+    flex: 1 1 calc(33.333% - 10px); /* Distribuye los botones en 3 columnas con un pequeño espacio entre ellos */
+    max-width: calc(33.333% - 10px);
+    min-width: 100px; /* Asegura un ancho mínimo para los botones */
     transition: background-color 0.3s ease;
 }
 
