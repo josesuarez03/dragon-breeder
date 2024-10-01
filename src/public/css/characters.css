@@ -83,7 +83,7 @@
     padding: 20px;
     border-radius: 15px;
     max-width: 600px;
-    margin: 0 auto;
+    margin: 40px auto 60px auto; /* top: 40px, right: auto, bottom: 60px, left: auto */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -135,16 +135,136 @@
     background-color: #e67e22;
 }
 
+/* Estilo del contenedor del checkbox y el label */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+/* Ocultar el checkbox predeterminado */
+.checkbox-container input[type="checkbox"] {
+    display: none;
+}
+
+/* Crear un estilo personalizado para el checkbox */
+.custom-checkbox {
+    width: 20px;
+    height: 20px;
+    background-color: #34495e;
+    border: 2px solid #e74c3c; /* Borde rojo */
+    border-radius: 4px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Estilo para el "check" cuando está marcado */
+.checkbox-container input[type="checkbox"]:checked + .custom-checkbox {
+    background-color: #f39c12; /* Cambiar color cuando está seleccionado */
+    border-color: #f39c12; /* Cambiar el borde cuando está seleccionado */
+}
+
+/* Estilo del ícono de check */
+.custom-checkbox::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 6px;
+    width: 5px;
+    height: 10px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Mostrar el check cuando está seleccionado */
+.checkbox-container input[type="checkbox"]:checked + .custom-checkbox::after {
+    opacity: 1;
+}
+
+/* Estilo del label del checkbox */
+.checkbox-container label {
+    margin-left: 10px;
+    font-weight: bold;
+    color: #ecf0f1; /* Texto claro */
+}
+
 
 /* Ajustes responsivos */
 @media (max-width: 768px) {
+    /* En dispositivos más pequeños, los ítems se apilan verticalmente */
     .characters-view li {
         flex-direction: column;
         text-align: center;
     }
 
-    .characters-view li form button {
+    /* Alinear los botones uno debajo del otro */
+    .characters-view li form {
+        display: block;
         width: 100%;
+        text-align: center;
+    }
+
+    .characters-view li form button {
+        width: 90%;
         margin-top: 10px;
+        margin-left: 0; /* Remover el margen lateral para centrar los botones */
+    }
+
+    .create-character-view {
+        max-width: 90%; /* Reducir el ancho máximo para tablets y dispositivos más pequeños */
+        padding: 35px;
+        margin-left: 25px;
+        margin-right: 25px;
+    }
+
+    .create-character-view form input,
+    .create-character-view form select {
+        font-size: 1em; /* Ajustar el tamaño de fuente para mejor legibilidad en pantallas más pequeñas */
+        padding: 8px; /* Reducir el padding para mejorar el espaciado */
+    }
+
+    .create-character-view form button {
+        padding: 8px 15px; /* Reducir el tamaño del botón */
+        font-size: 1em; /* Ajustar el tamaño de fuente del botón */
     }
 }
+
+@media (max-width: 600px) {
+    /* Ajustes adicionales para pantallas pequeñas, como móviles */
+    .characters-view li {
+        padding: 10px;
+        width: 300px;
+    }
+
+    .characters-view li form button {
+        padding: 6px 10px;
+        font-size: 0.9em; /* Reducir un poco el tamaño de los botones */
+    }
+
+    .create-character-view {
+        max-width: 100%; /* Ocupa todo el ancho disponible en pantallas pequeñas */
+        padding: 30px; /* Reducir el padding */
+        margin-left: 25px;
+        margin-right: 25px;
+    }
+
+    .create-character-view form input,
+    .create-character-view form select {
+        font-size: 0.9em; /* Reducir un poco más el tamaño de fuente */
+        padding: 6px; /* Ajustar el padding en pantallas pequeñas */
+    }
+
+    .create-character-view form button {
+        padding: 6px 10px; /* Reducir el tamaño del botón en móviles */
+        font-size: 0.9em;
+    }
+
+    .create-character-view h1 {
+        font-size: 1.5em; /* Ajustar el tamaño de la cabecera */
+    }
+}
+

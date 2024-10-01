@@ -1,3 +1,11 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Personajes</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="/css/characters.css">
+</head>
+
 <div class="create-character-view">
     <h1>Editar Personaje</h1>
     <form action="/characters/<%= character.id %>/update" method="post">
@@ -31,8 +39,11 @@
         <label for="attack">Ataque</label>
         <input type="number" name="attack" step="0.1" required>
 
-        <label for="specialAbilities">Habilidades Especiales</label>
-        <input type="checkbox" name="specialAbilities" value="true">
+        <div class="checkbox-container">
+            <input type="checkbox" name="specialAbilities" value="true" id="specialAbilities">
+            <div class="custom-checkbox"></div>
+            <label for="specialAbilities">Habilidades Especiales</label>
+        </div>
 
         <label for="stage">Stage</label>
         <select name="stage" required>
@@ -46,3 +57,14 @@
         <button type="submit">Crear Dragón</button>
     </form>
 </div>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function(event) {
+        const checkbox = document.querySelector('input[name="specialAbilities"]');
+        
+        if (!checkbox.checked) {
+            event.preventDefault(); 
+            alert('Por favor, selecciona las Habilidades Especiales antes de continuar.');
+        }
+    });
+</script>

@@ -15,5 +15,22 @@
     "stage": "mini",
     "imageUrl": "/sprites/dragons/mini-dragon.png",
     "availableForBattle": false
+  },
+  {
+    "id": 2,
+    "name": "dario",
+    "hungry": 1,
+    "energy": 1,
+    "health": 1,
+    "speed": 1,
+    "agility": 1,
+    "strength": 1,
+    "specialAbilities": true,
+    "intelligence": 1,
+    "defense": 1,
+    "attack": 1,
+    "stage": "mini",
+    "imageUrl": "/sprites/dragons/mini-dragon2.png",
+    "availableForBattle": false
   }
 ]

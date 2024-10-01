@@ -7,5 +7,7 @@ Este juego es una granja de dragones que contiene varios dragones y editar sus c
 - Express
 - EJS
 - Bootstrap
+- Google Fonts
 
-## Desarrollo (en progreso)
+## Fuente usada de Google Fonts
+- https://fonts.google.com/specimen/MedievalSharp (Medieval Sharp)
