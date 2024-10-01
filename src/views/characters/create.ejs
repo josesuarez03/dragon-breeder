@@ -1,52 +1,64 @@
-<h1>Crear Personajes</h1>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Personajes</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="/css/game.css">
+    <link rel="stylesheet" href="/css/box-eggs.css">
+    <link rel="stylesheet" href="/css/characters.css">
+</head>
 
-<form action="/characters" method="POST">
-    <label for="name">Nombre</label>
-    <input type="text" name="name" required>
+<div class="create-character-view">
+    <h1>Crear Personajes</h1>
 
-    <label for="hungry">Hambre</label>
-    <input type="number" name="hungry" step="0.1" required>
+    <form action="/characters" method="POST">
+        <label for="name">Nombre</label>
+        <input type="text" name="name" required>
 
-    <label for="energy">Energía</label>
-    <input type="number" name="energy" step="0.1" required>
+        <label for="hungry">Hambre</label>
+        <input type="number" name="hungry" step="0.1" required>
 
-    <label for="health">Salud</label>
-    <input type="number" name="health" step="0.1" required>
+        <label for="energy">Energía</label>
+        <input type="number" name="energy" step="0.1" required>
 
-    <label for="speed">Velocidad</label>
-    <input type="number" name="speed" step="0.1" required>
+        <label for="health">Salud</label>
+        <input type="number" name="health" step="0.1" required>
 
-    <label for="agility">Agilidad</label>
-    <input type="number" name="agility" step="0.1" required>
+        <label for="speed">Velocidad</label>
+        <input type="number" name="speed" step="0.1" required>
 
-    <label for="strength">Fuerza</label>
-    <input type="number" name="strength" step="0.1" required>
+        <label for="agility">Agilidad</label>
+        <input type="number" name="agility" step="0.1" required>
 
-    <label for="intelligence">Inteligencia</label>
-    <input type="number" name="intelligence" step="0.1" required>
+        <label for="strength">Fuerza</label>
+        <input type="number" name="strength" step="0.1" required>
 
-    <label for="defense">Defensa</label>
-    <input type="number" name="defense" step="0.1" required>
+        <label for="intelligence">Inteligencia</label>
+        <input type="number" name="intelligence" step="0.1" required>
 
-    <label for="attack">Ataque</label>
-    <input type="number" name="attack" step="0.1" required>
+        <label for="defense">Defensa</label>
+        <input type="number" name="defense" step="0.1" required>
 
-    <label for="specialAbilities">Habilidades Especiales</label>
-    <input type="checkbox" name="specialAbilities" value="true">
+        <label for="attack">Ataque</label>
+        <input type="number" name="attack" step="0.1" required>
 
-    <label for="stage">Stage</label>
-    <select name="stage" required>
-        <option value="mini">Mini</option>
-        <option value="adult">Adult</option>
-    </select>
+        <label for="specialAbilities">Habilidades Especiales</label>
+        <input type="checkbox" name="specialAbilities" value="true">
 
-    <label for="imageUrl">Imagen</label>
-    <select name="imageUrl" required>
-        <% const dragonImages = ['chicken.png', 'mini-dragon.png', 'mini-dragon2.png', 'mini-dragon3.png']; %>
-        <% dragonImages.forEach((image) => { %>
-        <option value="/sprites/dragons/<%= image %>"><%= image %></option>
-        <% }); %>
-    </select>
+        <label for="stage">Stage</label>
+        <select name="stage" required>
+            <option value="mini">Mini</option>
+            <option value="adult">Adult</option>
+        </select>
 
-    <button type="submit">Crear Dragón</button>
-</form>
+        <label for="imageUrl">Imagen</label>
+        <select name="imageUrl" required>
+            <% const dragonImages = ['chicken.png', 'mini-dragon.png', 'mini-dragon2.png', 'mini-dragon3.png']; %>
+            <% dragonImages.forEach((image) => { %>
+            <option value="/sprites/dragons/<%= image %>"><%= image %></option>
+            <% }); %>
+        </select>
+
+        <button type="submit">Crear Dragón</button>
+    </form>
+</div>

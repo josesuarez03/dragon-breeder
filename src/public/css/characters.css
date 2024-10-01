@@ -76,6 +76,66 @@
     background-color: #e67e22; /* Oscurecer al hacer hover */
 }
 
+/* Estilo para la vista de creación de personajes */
+.create-character-view {
+    background-color: #2c3e50; /* Fondo oscuro */
+    color: #ecf0f1; /* Texto claro */
+    padding: 20px;
+    border-radius: 15px;
+    max-width: 600px;
+    margin: 0 auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.create-character-view h1 {
+    color: #f39c12; /* Color dorado */
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.create-character-view form {
+    display: flex;
+    flex-direction: column;
+}
+
+.create-character-view form label {
+    font-weight: bold;
+    margin-top: 10px;
+    color: #ecf0f1;
+}
+
+.create-character-view form input,
+.create-character-view form select {
+    padding: 10px;
+    border: 2px solid #e74c3c; /* Bordes rojos */
+    border-radius: 8px;
+    background-color: #34495e; /* Fondo de los inputs */
+    color: #ecf0f1;
+    margin-top: 5px;
+}
+
+.create-character-view form input:focus,
+.create-character-view form select:focus {
+    outline: none;
+    border-color: #f39c12; /* Bordes dorados al enfoque */
+}
+
+.create-character-view form button {
+    background-color: #f39c12; /* Botón dorado */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.create-character-view form button:hover {
+    background-color: #e67e22;
+}
+
+
 /* Ajustes responsivos */
 @media (max-width: 768px) {
     .characters-view li {

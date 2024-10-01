@@ -21,6 +21,7 @@ app.set('layout', 'index');
 // Configuración de la carpeta estática para servir imágenes, estilos, etc.
 app.use(express.static(path.join(__dirname, 'public')));
 
+
 // Configuración de las rutas
 app.use('/', gameRoutes);
 
