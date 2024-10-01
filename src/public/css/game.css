@@ -14,7 +14,7 @@
 
 /* Ajuste para la tarjeta de personaje (dragón) */
 .card {
-    width: 50%;
+    width: 600px;
     background-color: #2c3e50; /* Color oscuro */
     border: 2px solid #c0392b; /* Borde rojo oscuro */
     border-radius: 15px;      
@@ -26,7 +26,6 @@
     margin: 20px;
     overflow: hidden; /* Asegura que el contenido no se desborde */
     color: #ecf0f1; /* Texto claro */
-    
 }
 
 /* Ajuste para el contenido de la tarjeta */
@@ -62,26 +61,26 @@
 /* Ajuste de la tabla de atributos */
 .table-attributes {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    justify-content: space-between; /* Distribuye los ítems equitativamente */
     padding: 0;
     margin: 10px 0;
-    width: 100%; /* Ajuste de ancho para que ocupe el 100% */
+    width: 100%; /* Asegura que la tabla ocupe todo el ancho disponible */
     overflow: hidden;
 }
 
-/* Cada ítem de atributo tiene menos margen para evitar el desbordamiento */
+/* Cada ítem de atributo tiene mejor margen y ancho para evitar desbordamientos */
 .attributesItem {
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Orientación en columna */
     align-items: center;
     font-size: 1.2em;
-    margin: 0 5px;
-    padding: 10px;
     border-radius: 10px;
     background-color: #34495e; /* Fondo oscuro */
     border: 1px solid #e74c3c; /* Borde rojo */
-    width: 30%; /* Asegura que los elementos ocupen el 30% cada uno */
+    justify-content: center;
+    padding: 10px;
+    width: 30%; /* Ajusta el ancho para que haya espacio suficiente para cada ítem */
+    margin: 0 5px; /* Espacio entre cada ítem */
 }
 
 /* Estilos específicos para niveles */
@@ -95,6 +94,8 @@
 
 .availableBattle {
     color: #2ecc71; /* Verde si está disponible */
+    font-size: 1.2em;
+    text-align: center;
 }
 
 /* Ajustar el contenedor para los botones fuera de la tarjeta */

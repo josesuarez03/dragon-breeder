@@ -1,94 +1,90 @@
-.container {
-    padding: 20px;
-    max-width: 900px;  /* Limit container width */
-    margin: 0 auto;    /* Center container */
-}
-
-/* Styling for the New Character Button */
-.btn-new-character {
+/* Estilo para la vista de personajes, encapsulado bajo .characters-view */
+.characters-view a[href="/characters/new"] {
     display: inline-block;
-    margin-bottom: 20px;
-    padding: 10px 20px;
-    background-color: #4CAF50;  /* Green button */
-    color: #fff;
+    background-color: #f39c12; /* Color dorado */
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
     text-decoration: none;
-    border-radius: 5px;
+    font-weight: bold;
+    margin-bottom: 20px;
     transition: background-color 0.3s ease;
 }
 
-.btn-new-character:hover {
-    background-color: #45a049;  /* Darker green on hover */
+.characters-view a[href="/characters/new"]:hover {
+    background-color: #e67e22;
 }
 
-/* Grid Layout for Character List */
-.character-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr; /* Two columns: Name and Actions */
-    gap: 15px;                      /* Spacing between grid items */
-    align-items: center;
-    text-align: left;
+/* Lista de personajes */
+.characters-view ul {
+    list-style-type: none; /* Elimina los bullets de la lista */
+    padding: 0;
 }
 
-/* Header Styling for Table */
-.character-header {
-    background-color: #f4f4f4;
-    padding: 10px;
-    font-weight: bold;
-    border-bottom: 2px solid #ddd;
-}
-
-/* Row Styling */
-.character-name, .character-actions {
+.characters-view li {
+    background-color: #2c3e50; /* Fondo oscuro */
+    color: #ecf0f1; /* Texto claro */
     padding: 15px;
-    border-bottom: 1px solid #ddd;  /* Add row separator */
+    margin-bottom: 10px;
+    border-radius: 10px; /* Bordes redondeados */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Añadir un poco de sombra */
 }
 
-.character-name {
-    background-color: #fff;
+/* Estilos para los enlaces de "Editar" */
+.characters-view li a {
+    color: #3498db; /* Azul claro */
+    text-decoration: none;
+    font-weight: bold;
 }
 
-.character-actions {
-    background-color: #f9f9f9;
-    display: flex;                /* Use flexbox for action buttons */
-    justify-content: space-around;/* Distribute buttons evenly */
+.characters-view li a:hover {
+    text-decoration: underline; /* Subraya al pasar el mouse */
 }
 
-/* Button Styling */
-.btn-edit, .btn-delete {
-    padding: 8px 12px;
+/* Botón de "Eliminar" y "Seleccionar" */
+.characters-view li form {
+    display: inline-block;
+}
+
+.characters-view li form button {
+    background-color: #f39c12; /* Color dorado para ambos botones */
+    color: white;
     border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
     cursor: pointer;
-    border-radius: 4px;
-    color: #fff;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
 }
 
-.btn-edit {
-    background-color: #007bff;    /* Blue for Edit button */
+.characters-view li form button:hover {
+    background-color: #e67e22; /* Oscurecer al hacer hover */
 }
 
-.btn-edit:hover {
-    background-color: #0056b3;    /* Darker blue on hover */
+.characters-view li form button[type="submit"] {
+    margin-left: 10px;
 }
 
-.btn-delete {
-    background-color: #e74c3c;    /* Red for Delete button */
+.characters-view li form button[type="submit"]:first-child {
+    background-color: #f39c12; /* Dorado para el botón de Seleccionar */
 }
 
-.btn-delete:hover {
-    background-color: #c0392b;    /* Darker red on hover */
+.characters-view li form button[type="submit"]:first-child:hover {
+    background-color: #e67e22; /* Oscurecer al hacer hover */
 }
 
-/* Optional: Responsive Design */
-@media (max-width: 600px) {
-    .character-grid {
-        grid-template-columns: 1fr;  /* Stack rows on small screens */
-    }
-
-    .character-header, .character-name, .character-actions {
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+    .characters-view li {
+        flex-direction: column;
         text-align: center;
     }
 
-    .character-actions {
-        flex-direction: column;      /* Stack buttons vertically */
+    .characters-view li form button {
+        width: 100%;
+        margin-top: 10px;
     }
 }
