@@ -127,3 +127,54 @@
     cursor: not-allowed;
 }
 
+/* Dispositivos móviles (pantallas de hasta 576px) */
+@media (max-width: 576px) {
+    .card {
+        width: 100%; /* La tarjeta ocupa el 100% del ancho en móviles */
+        padding: 15px;
+    }
+
+    .imageCard img {
+        height: 150px; /* Reduce la altura de la imagen en pantallas pequeñas */
+    }
+
+    .name-character {
+        font-size: 1.5em; /* Reduce el tamaño del texto en pantallas pequeñas */
+    }
+
+    .type-dragon {
+        font-size: 1em;
+    }
+
+    .table-attributes {
+        flex-direction: column; /* Los atributos se apilan en columna en móviles */
+        align-items: center;
+    }
+
+    .attributesItem {
+        width: 80%; /* Los ítems ocupan más espacio en pantallas pequeñas */
+        margin-bottom: 10px; /* Añade espacio inferior entre ítems */
+    }
+}
+
+/* Pantallas medianas (entre 576px y 768px) */
+@media (min-width: 576px) and (max-width: 768px) {
+    .card {
+        width: 80%; /* Tarjeta más ancha en pantallas medianas */
+    }
+
+    .attributesItem {
+        width: 45%; /* Ajusta el ancho de los ítems */
+    }
+}
+
+/* Pantallas grandes (más de 768px) */
+@media (min-width: 768px) {
+    .card {
+        width: 600px; /* Ancho de la tarjeta en pantallas grandes */
+    }
+
+    .attributesItem {
+        width: 30%; /* Mantén el ancho de los ítems en pantallas grandes */
+    }
+}
