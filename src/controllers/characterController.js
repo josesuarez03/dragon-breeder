@@ -39,7 +39,7 @@ exports.store = (req, res) => {
 };
 
 exports.edit = (req, res) => {
-    const character = characterModel.findDragonById(parseInt(req.params.id));
+    const character = characterModel.findCharacterById(parseInt(req.params.id));
     res.render('characters/edit', { character });
 };
 
