@@ -67,7 +67,7 @@ exports.breed = (req, res) => {
     }
 };
 
-exports.hatchEgg = (req, res) => {
+/*exports.hatchEgg = (req, res) => {
     const eggId = parseInt(req.body.eggId);
     const newDragon = characterModel.hatchEgg(eggId);
     
@@ -88,7 +88,7 @@ exports.evolveDragon = (req, res) => {
     } else {
         res.status(400).json({ message: 'Unable to evolve mini dragon' });
     }
-};
+};*/
 
 
 exports.regenerateAttributes = (req, res) => {
@@ -117,6 +117,15 @@ exports.regenerateAttributes = (req, res) => {
                 return res.json({ message: 'Dragon entrenado', dragon: dragonToTrain });
             }
             break; 
+
+        case 'evolve':
+            const evolvedDragon = characterModel.evolveDragon(dragonId);
+            if (evolvedDragon) {
+                return res.json({ message: 'Dragón evolucionado', dragon: evolvedDragon });
+            } else {
+                return res.status(400).json({ message: 'No se pudo evolucionar el dragón.' });
+            }
+            break;
         case 'battle':
             const dragon = characterModel.findCharacterById(dragonId);
             if (dragon && dragon.availableForBattle) {

@@ -105,7 +105,7 @@ const breedDragons = (dragon1, dragon2) => {
     return null;
 };
 
-const hatchEgg = (egg) => {
+/*const hatchEgg = (egg) => {
     const willHatch = Math.random() < eggHatchingProbability;
     const miniDragonImage = selectMiniDragonImage();
     
@@ -119,20 +119,20 @@ const hatchEgg = (egg) => {
             hungry: Math.random() * 100,
             energy: Math.random() * 100,
             health: Math.random() * 100,
-            speed: Math.random() * 50,
-            agility: Math.random() * 50,
-            strength: Math.random() * 50,
+            speed: Math.random() * 10,
+            agility: Math.random() * 10,
+            strength: Math.random() * 10,
             specialAbilities: Math.random() > 0.5,
-            intelligence: Math.random() * 50,
-            defense: Math.random() * 50,
-            attack: Math.random() * 50,
+            intelligence: Math.random() * 10,
+            defense: Math.random() * 10,
+            attack: Math.random() * 10,
             availableForBattle: false,
         };
         return miniDragon;
     } else {
         return null;
     }
-};
+};*/
 
 // Generate a dragon with random characteristics
 const generateRandomDragon = (miniDragon) => {
@@ -193,6 +193,65 @@ const decrementDragonAttributes = () => {
     // Guardar cambios en el archivo
     saveDragons(dragons);
 };
+
+const evolveDragon = (dragonId) => {
+    let dragons = getAllDragons();
+    const dragon = findDragonById(dragonId);
+
+    // Comprobar si el dragón existe y si está en estado 'egg'
+    if (dragon && dragon.stage === 'egg') {
+        // Generar un número aleatorio para determinar si el huevo eclosiona
+        const willHatch = Math.random() < eggHatchingProbability;
+
+        // Solo eclosiona si la energía y la salud están al 100%
+        if (willHatch && dragon.energy === 100 && dragon.health === 100) {
+            // Evolucionar a 'mini'
+            const evolvedDragon = {
+                ...dragon,
+                stage: 'mini',
+                imageUrl: selectMiniDragonImage(), 
+                hungry: 0, 
+            };
+
+            dragons = dragons.map(d => (d.id === evolvedDragon.id ? evolvedDragon : d));
+            saveDragons(dragons);
+
+            return evolvedDragon;  
+        } else if (!willHatch) {
+            console.log('El huevo no ha eclosionado.');
+        } else {
+            console.log('El dragón debe tener energía y salud al 100% para evolucionar.');
+        }
+        return null; // No se pudo evolucionar
+    }
+
+    // Comprobar si el dragón es 'mini' y tiene todos los atributos físicos al 30 para evolucionar a adulto
+    if (dragon && dragon.stage === 'mini') {
+        const allAttributesMet = ['speed', 'strength', 'agility', 'intelligence', 'defense', 'attack'].every(attr => dragon[attr] >= 30);
+
+        if (allAttributesMet) {
+            // Evolucionar a adulto
+            const evolvedDragon = {
+                ...dragon,
+                stage: 'adult',
+                imageUrl: selectDragonImage(dragon),  // Cambia la imagen
+                energy: Math.max(dragon.energy - 10, 0),  // Reducir energía
+                hungry: Math.max(dragon.hungry - 10, 0),  // Reducir hambre
+                health: Math.max(dragon.health - 10, 0)   // Reducir salud
+            };
+
+            // Actualizar el dragón en la lista y guardarlo
+            dragons = dragons.map(d => (d.id === evolvedDragon.id ? evolvedDragon : d));
+            saveDragons(dragons);
+
+            return evolvedDragon;  // Retornar el dragón evolucionado a adulto
+        }
+    }
+
+    return null;  // No se pudo evolucionar
+};
+
+
 
 // Dragon model functions
 const characterModel = {
