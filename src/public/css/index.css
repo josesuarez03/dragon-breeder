@@ -26,6 +26,11 @@ span{
     color: #f1c40f; /* Dorado para resaltar el ícono del menú móvil */
 }
 
+.navbar-toggler .bi-list {
+    color: #ecf0f1; /* Cambia a negro o cualquier color que prefieras */
+}
+
+
 .navbar-nav .nav-item .nav-link {
     color: #ecf0f1; /* Color blanco claro para los enlaces */
     font-size: 1.2em; /* Aumenta el tamaño del texto para una sensación más dramática */
@@ -42,7 +47,7 @@ span{
 
 
 #sticky-footer {
-    background-color: #2c3e50; /* Fondo oscuro para el pie de página */
+    background-color: #2c3e50; /* Color oscuro */
     border-top: 2px solid #e74c3c; /* Añade una línea roja en la parte superior para consistencia */
 }
 
