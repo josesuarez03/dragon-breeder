@@ -5,13 +5,13 @@
     "hungry": 0,
     "energy": 0,
     "health": 100,
-    "speed": 1,
-    "agility": 1,
-    "strength": 1,
+    "speed": 38,
+    "agility": 38,
+    "strength": 38,
     "specialAbilities": true,
-    "intelligence": 1,
-    "defense": 1,
-    "attack": 1,
+    "intelligence": 38,
+    "defense": 38,
+    "attack": 38,
     "stage": "mini",
     "imageUrl": "/sprites/dragons/mini-dragon.png",
     "availableForBattle": false
@@ -19,8 +19,8 @@
   {
     "id": 2,
     "name": "Dario",
-    "hungry": 98,
-    "energy": 98,
+    "hungry": 0,
+    "energy": 0,
     "health": 100,
     "speed": 46,
     "agility": 46,
@@ -31,6 +31,6 @@
     "attack": 46,
     "stage": "mini",
     "imageUrl": "/sprites/dragons/mini-dragon3.png",
-    "availableForBattle": true
+    "availableForBattle": false
   }
 ]

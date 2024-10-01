@@ -30,13 +30,13 @@
         </div>
     </div>
 
-    <!-- Los botones de acción ahora están fuera del div .card -->
     <div class="action-buttons">
         <% if (character) { %>
             <button class="btn-feed" onclick="feedDragon('<%= character.id %>')">Dar de Comer</button>
             <button class="btn-heal" onclick="healDragon('<%= character.id %>')">Sanar</button>
-            <button class="btn-heal" onclick="trainDragon('<%= character.id %>')">Entrenar</button>
-            <button class="btn-battle" onclick="startBattle('<%= character.id %>')" <%= !character.availableBattle ? 'disabled' : '' %>>Luchar</button>
+            <button class="btn-train" onclick="trainDragon('<%= character.id %>')">Entrenar</button>
+            <button class="btn-evolve" onclick="evolveDragon('<%= character.id %>')" <%= character.stage === 'adult' ? 'disabled' : '' %>>Evolucionar</button>
+            <button class="btn-battle" onclick="startBattle('<%= character.id %>')" <%= !character.availableForBattle ? 'disabled' : '' %>>Luchar</button>
         <% } %>
     </div>
 </div>
@@ -58,8 +58,10 @@
                 console.log('¡Dragón curado! Salud restaurada.');
             } else if (action === 'battle') {
                 console.log('¡Batalla iniciada!');
-            } else if (action === 'train'){
+            } else if (action === 'train') {
                 console.log('Dragon entrenado');
+            } else if (action === 'evolve') {
+                console.log('Dragón evolucionado');
             }
             location.reload();
         })
@@ -78,7 +80,11 @@
         regenerateAttributes(dragonId, 'battle');
     }
 
-    function trainDragon(dragonId){
+    function trainDragon(dragonId) {
         regenerateAttributes(dragonId, 'train');
+    }
+
+    function evolveDragon(dragonId) {
+        regenerateAttributes(dragonId, 'evolve');
     }
 </script>

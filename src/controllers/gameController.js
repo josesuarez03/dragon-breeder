@@ -125,7 +125,7 @@ exports.regenerateAttributes = (req, res) => {
             } else {
                 return res.status(400).json({ message: 'No se pudo evolucionar el dragón.' });
             }
-            break;
+            
         case 'battle':
             const dragon = characterModel.findCharacterById(dragonId);
             if (dragon && dragon.availableForBattle) {

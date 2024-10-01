@@ -75,6 +75,29 @@ const trainDragon = (dragon) => {
     saveDragon(dragon); // Asegúrate de guardar el dragón después de entrenarlo
 };
 
+/*const blackDragon = {
+    egg: '/public/sprites/eggs/egg3.png',
+    mini: '/public/sprites/dragons/mini-dragon3.png',
+    adult: '/public/sprites/dragons/adult-dragon3.png'
+};
+
+const greenDragon = {
+    egg: '/public/sprites/eggs/egg.png',
+    mini: '/public/sprites/dragons/mini-dragon.png',
+    adult: '/public/sprites/dragons/adult-dragon.png'
+};
+
+const orangeDragon = {
+    egg: '/public/sprites/eggs/egg2.png',
+    mini: '/public/sprites/dragons/mini-dragon2.png',
+    adult: '/public/sprites/dragons/adult-dragon2.png'
+};
+
+const chicken = {
+    egg: '/public/sprites/eggs/egg4.png',
+    adult: '/public/sprites/dragons/chicken.png'
+};*/
+
 
 const breedDragons = (dragon1, dragon2) => {
     if (dragon1.type === 'chicken' || dragon2.type === 'chicken' || dragon1.type === dragon2.type) {
@@ -225,32 +248,37 @@ const evolveDragon = (dragonId) => {
         return null; // No se pudo evolucionar
     }
 
-    // Comprobar si el dragón es 'mini' y tiene todos los atributos físicos al 30 para evolucionar a adulto
     if (dragon && dragon.stage === 'mini') {
         const allAttributesMet = ['speed', 'strength', 'agility', 'intelligence', 'defense', 'attack'].every(attr => dragon[attr] >= 30);
 
         if (allAttributesMet) {
-            // Evolucionar a adulto
+            // Evolve to adult
             const evolvedDragon = {
                 ...dragon,
                 stage: 'adult',
-                imageUrl: selectDragonImage(dragon),  // Cambia la imagen
-                energy: Math.max(dragon.energy - 10, 0),  // Reducir energía
-                hungry: Math.max(dragon.hungry - 10, 0),  // Reducir hambre
-                health: Math.max(dragon.health - 10, 0)   // Reducir salud
+                imageUrl: selectDragonImage(),  // Change the image
+                energy: Math.max(dragon.energy - 10, 0),  // Reduce energy
+                hungry: Math.max(dragon.hungry - 10, 0),  // Reduce hunger
+                health: Math.max(dragon.health - 10, 0),  // Reduce health
+                // Cap physical attributes at 30
+                speed: Math.min(dragon.speed, 30),
+                strength: Math.min(dragon.strength, 30),
+                agility: Math.min(dragon.agility, 30),
+                intelligence: Math.min(dragon.intelligence, 30),
+                defense: Math.min(dragon.defense, 30),
+                attack: Math.min(dragon.attack, 30)
             };
 
-            // Actualizar el dragón en la lista y guardarlo
+            // Update the dragon in the list and save it
             dragons = dragons.map(d => (d.id === evolvedDragon.id ? evolvedDragon : d));
             saveDragons(dragons);
 
-            return evolvedDragon;  // Retornar el dragón evolucionado a adulto
+            return evolvedDragon;  // Return the evolved adult dragon
         }
     }
 
-    return null;  // No se pudo evolucionar
+    return null;  // Could not evolve
 };
-
 
 
 // Dragon model functions
@@ -262,6 +290,7 @@ const characterModel = {
     saveCharacters: saveDragons, 
     decrementDragonAttributes,
     trainDragon,
+    evolveDragon,
 
     breedDragons: (dragon1Id, dragon2Id) => {
         const dragons = getAllDragons();
