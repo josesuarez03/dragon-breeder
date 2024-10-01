@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const logger = require('morgan');
 const expressLayouts = require('express-ejs-layouts');
 const gameRoutes = require('../src/routes/gameRoutes');
+const characterModel = require('./models/characterModel');
 
 const app = express();
 
@@ -36,6 +37,11 @@ app.post('/game/select', (req, res) => {
     req.session.selectedCharacter = characterId;
     res.redirect('/'); // Redirige al index
 });
+
+// Llama a decrementDragonAttributes cada 10 segundos (10000 ms)
+setInterval(() => {
+    characterModel.decrementDragonAttributes();
+}, 10000);
 
 // Iniciar el servidor en el puerto deseado
 const PORT = process.env.PORT || 3000;

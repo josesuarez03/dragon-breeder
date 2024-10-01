@@ -25,5 +25,7 @@ router.post('/characters/:id/update', characterController.update);
 router.post('/characters/:id/delete', characterController.delete);
 
 
+router.post('/dragon/:id/action', gameController.regenerateAttributes);
+
 
 module.exports = router;

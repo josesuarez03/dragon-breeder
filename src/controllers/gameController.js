@@ -92,15 +92,45 @@ exports.evolveDragon = (req, res) => {
 
 
 exports.regenerateAttributes = (req, res) => {
-    const dragonId = parseInt(req.body.dragonId);
-    const action = req.body.action; 
+    const dragonId = parseInt(req.params.id);  
+    const action = req.body.action;  
 
-    const updatedDragon = characterModel.regenerateDragonAttributes(dragonId, action);
-    if (updatedDragon) {
-        res.json({ message: 'Dragon attributes updated!', dragon: updatedDragon });
-    } else {
-        res.status(400).json({ message: 'Unable to update dragon attributes' });
+    let updatedDragon;
+    switch (action) {
+        case 'feed':
+            updatedDragon = characterModel.regenerateDragonAttributes(dragonId, 'feed');
+            if (updatedDragon) {
+                return res.json({ message: 'Dragon alimentado', dragon: updatedDragon });
+            }
+            break;
+        case 'heal':
+            updatedDragon = characterModel.regenerateDragonAttributes(dragonId, 'heal');
+            if (updatedDragon) {
+                return res.json({ message: 'Dragon curado', dragon: updatedDragon });
+            }
+            break;
+
+        case 'train':
+            const dragonToTrain = characterModel.findCharacterById(dragonId); 
+            if (dragonToTrain) {
+                characterModel.trainDragon(dragonToTrain); 
+                return res.json({ message: 'Dragon entrenado', dragon: dragonToTrain });
+            }
+            break; 
+        case 'battle':
+            const dragon = characterModel.findCharacterById(dragonId);
+            if (dragon && dragon.availableForBattle) {
+                // Aquí puedes añadir lógica adicional para la batalla
+                return res.json({ message: 'Batalla iniciada', dragon: dragon });
+            } else {
+                return res.status(400).json({ message: 'El dragón no está listo para la batalla' });
+            }
+        default:
+            return res.status(400).json({ message: 'Acción no reconocida' });
     }
+
+    // Si el dragón no pudo ser actualizado por alguna razón
+    return res.status(400).json({ message: 'No se pudo realizar la acción' });
 };
 
 
@@ -149,4 +179,5 @@ exports.selectDragon = (req, res) => {
 
     res.redirect('/game');
 };
+
 

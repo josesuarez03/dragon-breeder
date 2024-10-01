@@ -17,10 +17,10 @@
 
                 <ul class="table-attributes">
                     <li class="attributesItem">
-                        <span class="energyLevel"><%= character.energyLevel %> ⚡</span>
+                        <span class="energyLevel"><%= character.energy %> ⚡</span>
                     </li>
                     <li class="attributesItem">
-                        <span class="healthLevel"><%= character.healthLevel %> ❤️</span>
+                        <span class="healthLevel"><%= character.health %> ❤️</span>
                     </li>
                     <li class="attributesItem">
                         <span class="availableBattle"><%= character.availableBattle ? 'Disponible para luchar' : 'No disponible para luchar' %></span>
@@ -35,44 +35,50 @@
         <% if (character) { %>
             <button class="btn-feed" onclick="feedDragon('<%= character.id %>')">Dar de Comer</button>
             <button class="btn-heal" onclick="healDragon('<%= character.id %>')">Sanar</button>
+            <button class="btn-heal" onclick="trainDragon('<%= character.id %>')">Entrenar</button>
             <button class="btn-battle" onclick="startBattle('<%= character.id %>')" <%= !character.availableBattle ? 'disabled' : '' %>>Luchar</button>
         <% } %>
     </div>
 </div>
 
 <script>
-    function feedDragon(dragonId) {
-        fetch(`/feed/${dragonId}`, {
+    function regenerateAttributes(dragonId, action) {
+        fetch(`/dragon/${dragonId}/action`, {
             method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ action: action })
         })
         .then(response => response.json())
         .then(data => {
-            alert('¡Dragón alimentado! Energía restaurada.');
+            if (action === 'feed') {
+                console.log('¡Dragón alimentado! Energía restaurada.');
+            } else if (action === 'heal') {
+                console.log('¡Dragón curado! Salud restaurada.');
+            } else if (action === 'battle') {
+                console.log('¡Batalla iniciada!');
+            } else if (action === 'train'){
+                console.log('Dragon entrenado');
+            }
             location.reload();
         })
         .catch(error => console.error('Error:', error));
+    }
+
+    function feedDragon(dragonId) {
+        regenerateAttributes(dragonId, 'feed');
     }
 
     function healDragon(dragonId) {
-        fetch(`/heal/${dragonId}`, {
-            method: 'POST',
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert('¡Dragón curado! Salud restaurada.');
-            location.reload();
-        })
-        .catch(error => console.error('Error:', error));
+        regenerateAttributes(dragonId, 'heal');
     }
 
     function startBattle(dragonId) {
-        fetch(`/battle/${dragonId}`, {
-            method: 'POST',
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert('¡Batalla iniciada!');
-        })
-        .catch(error => console.error('Error:', error));
+        regenerateAttributes(dragonId, 'battle');
+    }
+
+    function trainDragon(dragonId){
+        regenerateAttributes(dragonId, 'train');
     }
 </script>

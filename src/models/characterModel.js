@@ -55,6 +55,7 @@ const checkAvailableForBattle = (dragon) => {
 const regenerateAttributes = (dragon, action) => {
     if (action === 'feed') {
         dragon.hungry = Math.min(dragon.hungry + 30, 100);
+        dragon.energy = Math.min(dragon.energy + 20, 100);  // Energía también se restaura
     } else if (action === 'rest') {
         dragon.energy = Math.min(dragon.energy + 40, 100);
     } else if (action === 'heal') {
@@ -64,6 +65,16 @@ const regenerateAttributes = (dragon, action) => {
     dragon.availableForBattle = checkAvailableForBattle(dragon);
     return dragon;
 };
+const trainDragon = (dragon) => {
+    const attributes = ['speed', 'strength', 'agility', 'intelligence', 'defense', 'attack'];
+
+    attributes.forEach(attribute => {
+        dragon[attribute] += 1; // Incrementar cada atributo en 1
+    });
+
+    saveDragon(dragon); // Asegúrate de guardar el dragón después de entrenarlo
+};
+
 
 const breedDragons = (dragon1, dragon2) => {
     if (dragon1.type === 'chicken' || dragon2.type === 'chicken' || dragon1.type === dragon2.type) {
@@ -168,13 +179,30 @@ const openMysteryBox = () => {
     return randomDragon;
 };
 
+const decrementDragonAttributes = () => {
+    let dragons = getAllDragons();
+    dragons.forEach(dragon => {
+        // Disminuir hambre y energía con el tiempo
+        dragon.hungry = Math.max(dragon.hungry - 1, 0);  // Disminuir hambre, no menos de 0
+        dragon.energy = Math.max(dragon.energy - 1, 0);  // Disminuir energía, no menos de 0
+
+        // Actualizar disponibilidad para la batalla
+        dragon.availableForBattle = checkAvailableForBattle(dragon);
+    });
+
+    // Guardar cambios en el archivo
+    saveDragons(dragons);
+};
+
 // Dragon model functions
 const characterModel = {
     getAllCharacters: getAllDragons,
 
     findCharacterById: findDragonById,
 
-    saveCharacters: saveDragons,
+    saveCharacters: saveDragons, 
+    decrementDragonAttributes,
+    trainDragon,
 
     breedDragons: (dragon1Id, dragon2Id) => {
         const dragons = getAllDragons();
@@ -249,5 +277,7 @@ const characterModel = {
         saveDragons(dragons);
     }
 };
+
+
 
 module.exports = characterModel;
