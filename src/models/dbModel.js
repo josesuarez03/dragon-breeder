@@ -1,4 +1,5 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const dragonCollection = new mongoose.Schema({
     name: String,
@@ -22,7 +23,7 @@ const gameStateCollection = new mongoose.Schema({
     UUID: Number,
 });
 
-const users = new  mongoose.Schema({
+const usersCollection = new  mongoose.Schema({
     userId: Number,
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
@@ -33,8 +34,30 @@ const users = new  mongoose.Schema({
     gameState: [gameStateCollection], // Estado del juego del usuario
 });
 
+// Middleware para hashear la contraseña antes de guardar el usuario
+usersCollection.pre('save', async function (next) {
+    const user = this;
+
+    // Si la contraseña no ha sido modificada, continuar
+    if (!user.isModified('password')) return next();
+
+    try {
+        // Hashear la contraseña con bcrypt
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);  // Hashear y asignar el hash
+        next();  // Continuar con la operación de guardado
+    } catch (err) {
+        return next(err);  // Manejar cualquier error en el proceso de hasheo
+    }
+});
+
+// Método para comparar la contraseña ingresada con la almacenada (hash)
+usersCollection.methods.comparePassword = async function (candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+};
+
 const Dragon = mongoose.model('Dragon', dragonCollection);
 const GameState = mongoose.model('GameState', gameStateCollection);
-const User = mongoose.model('User', users);
+const User = mongoose.model('User', userscollection);
 
 module.exports ={Dragon, GameState, User}
