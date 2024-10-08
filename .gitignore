@@ -4,3 +4,4 @@ mongo
 *.json
 !packages.json
 !packages-lock.json
+.env

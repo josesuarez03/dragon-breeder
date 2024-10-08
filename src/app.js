@@ -5,8 +5,11 @@ const logger = require('morgan');
 const expressLayouts = require('express-ejs-layouts');
 const gameRoutes = require('../src/routes/gameRoutes');
 const characterModel = require('./models/characterModel');
+const connectDB = require('./config/database')
 
 const app = express();
+
+connectDB();
 
 app.use(logger('dev'));
 
