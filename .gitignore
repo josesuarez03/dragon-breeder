@@ -1,2 +1,6 @@
 node_modules
 vercel.json
+mongo
+*.json
+!packages.json
+!packages-lock.json
