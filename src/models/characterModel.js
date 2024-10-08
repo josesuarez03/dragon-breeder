@@ -1,51 +1,40 @@
 const fs = require('fs');
 const path = require('path');
 
-const dragonsFilePath = path.join(__dirname, '../data/dragons.json');
+const {Dragon} = require('./dbModel')
 
-const dragonSpritesPath = path.join(__dirname, '../public/sprites/dragons');
-const eggSpritesPath = path.join(__dirname, '../public/sprites/eggs');
+//const dragonSpritesPath = path.join(__dirname, '../public/sprites/dragons');
+//const eggSpritesPath = path.join(__dirname, '../public/sprites/eggs');
 
 const eggHatchingProbability = 0.8;
 
-const getAllDragons = () => {
-    return JSON.parse(fs.readFileSync(dragonsFilePath, 'utf-8'));
+const getAllDragons = async() => {
+    return await Dragon.find();
 };
 
-const saveDragons = (dragons) => {
-    fs.writeFileSync(dragonsFilePath, JSON.stringify(dragons, null, 2));
+const saveDragons = async (dragons) => {
+    await Dragon.insertMany(dragons);
 };
 
-const findDragonById = (id) => {
-    const dragons = getAllDragons();
-    return dragons.find(dragon => dragon.id === id);
+const findDragonById = async (id) => {
+    return await Dragon.findOne({ _id: id });
 };
 
-const saveDragon = (updatedDragon) => {
-    const dragons = getAllDragons();
-    const index = dragons.findIndex(dragon => dragon.id === updatedDragon.id);
-    if (index !== -1) {
-        dragons[index] = updatedDragon;
-        saveDragons(dragons);
-    }
+const saveDragon = async (updatedDragon) => {
+    await Dragon.findOneAndUpdate({ id: updatedDragon.id }, updatedDragon, { upsert: true });
 };
 
-const selectEggImage = (type) => {
-    const eggImages = fs.readdirSync(eggSpritesPath);
-    const availableEggs = eggImages.filter(image => image.includes(type));
-    return availableEggs[Math.floor(Math.random() * availableEggs.length)];
-};
 
-const selectDragonImage = () => {
-    const dragonImages = fs.readdirSync(dragonSpritesPath);
+const selectDragonImage = async () => {
+    const dragonImages = await fs.promises.readdir(dragonSpritesPath);
     const availableDragon = dragonImages[Math.floor(Math.random() * dragonImages.length)];
     return availableDragon;
 };
 
-const selectMiniDragonImage = () => {
-    const miniDragonImages = fs.readdirSync(dragonSpritesPath);
-    const availableMiniDragon = miniDragonImages[Math.floor(Math.random() * miniDragonImages.length)];
-    return availableMiniDragon;
+const selectEggImage = async (type) => {
+    const eggImages = await fs.promises.readdir(eggSpritesPath);  // Versión asíncrona
+    const availableEggs = eggImages.filter(image => image.includes(type));
+    return availableEggs[Math.floor(Math.random() * availableEggs.length)];
 };
 
 const checkAvailableForBattle = (dragon) => {
@@ -65,46 +54,25 @@ const regenerateAttributes = (dragon, action) => {
     dragon.availableForBattle = checkAvailableForBattle(dragon);
     return dragon;
 };
-const trainDragon = (dragon) => {
+const trainDragon = async (dragon) => {
     const attributes = ['speed', 'strength', 'agility', 'intelligence', 'defense', 'attack'];
 
     attributes.forEach(attribute => {
         dragon[attribute] += 1; // Incrementar cada atributo en 1
     });
 
-    saveDragon(dragon); // Asegúrate de guardar el dragón después de entrenarlo
+    await saveDragon(dragon); // Asegúrate de guardar el dragón después de entrenarlo
 };
 
-/*const blackDragon = {
-    egg: '/public/sprites/eggs/egg3.png',
-    mini: '/public/sprites/dragons/mini-dragon3.png',
-    adult: '/public/sprites/dragons/adult-dragon3.png'
-};
 
-const greenDragon = {
-    egg: '/public/sprites/eggs/egg.png',
-    mini: '/public/sprites/dragons/mini-dragon.png',
-    adult: '/public/sprites/dragons/adult-dragon.png'
-};
+const breedDragons = async (dragon1Id, dragon2Id) => {
+    const dragon1 = await findDragonById(dragon1Id);  // Buscar los dragones por ID
+    const dragon2 = await findDragonById(dragon2Id);
 
-const orangeDragon = {
-    egg: '/public/sprites/eggs/egg2.png',
-    mini: '/public/sprites/dragons/mini-dragon2.png',
-    adult: '/public/sprites/dragons/adult-dragon2.png'
-};
-
-const chicken = {
-    egg: '/public/sprites/eggs/egg4.png',
-    adult: '/public/sprites/dragons/chicken.png'
-};*/
-
-
-const breedDragons = (dragon1, dragon2) => {
     if (dragon1.type === 'chicken' || dragon2.type === 'chicken' || dragon1.type === dragon2.type) {
-        const eggImage = selectEggImage(dragon1.type === 'chicken' || dragon2.type === 'chicken' ? 'chicken' : 'dragon');
+        const eggImage = await selectEggImage(dragon1.type === 'chicken' || dragon2.type === 'chicken' ? 'chicken' : 'dragon');
         
-        const newEgg = {
-            id: Date.now(),
+        const newEgg = new Dragon({
             name: 'Mystery Egg',
             type: 'egg',
             stage: 'egg',
@@ -120,46 +88,20 @@ const breedDragons = (dragon1, dragon2) => {
             defense: 0,
             attack: 0,
             availableForBattle: false,
-            parent1: dragon1.id,
-            parent2: dragon2.id,
-        };
+            parent1: dragon1._id,
+            parent2: dragon2._id,
+        });
+        
+        await newEgg.save();  // Guardar el nuevo huevo en la base de datos
         return newEgg;
     }
     return null;
 };
 
-/*const hatchEgg = (egg) => {
-    const willHatch = Math.random() < eggHatchingProbability;
-    const miniDragonImage = selectMiniDragonImage();
-    
-    if (willHatch) {
-        const miniDragon = {
-            id: Date.now(),
-            name: `Mini Dragon ${Math.floor(Math.random() * 1000)}`,
-            type: 'dragon',
-            stage: 'mini', 
-            imageUrl: `/public/sprites/dragons/${miniDragonImage}`,
-            hungry: Math.random() * 100,
-            energy: Math.random() * 100,
-            health: Math.random() * 100,
-            speed: Math.random() * 10,
-            agility: Math.random() * 10,
-            strength: Math.random() * 10,
-            specialAbilities: Math.random() > 0.5,
-            intelligence: Math.random() * 10,
-            defense: Math.random() * 10,
-            attack: Math.random() * 10,
-            availableForBattle: false,
-        };
-        return miniDragon;
-    } else {
-        return null;
-    }
-};*/
 
-const openMysteryBox = () => {
-    const randomDragon = {
-        id: Date.now(),
+const openMysteryBox = async () => {
+    const randomDragon = new Dragon({
+        id: Date.now(), // O considera usar _id
         name: `Mysterious Dragon ${Math.floor(Math.random() * 1000)}`,
         type: 'dragon',
         stage: 'adult',
@@ -175,12 +117,13 @@ const openMysteryBox = () => {
         defense: Math.random() * 100,
         attack: Math.random() * 100,
         availableForBattle: checkAvailableForBattle(randomDragon),
-    };
+    });
+    await randomDragon.save();
     return randomDragon;
 };
 
-const decrementDragonAttributes = () => {
-    let dragons = getAllDragons();
+const decrementDragonAttributes = async () => {
+    let dragons = await getAllDragons();
     dragons.forEach(dragon => {
         // Disminuir hambre y energía con el tiempo
         dragon.hungry = Math.max(dragon.hungry - 1, 0);  // Disminuir hambre, no menos de 0
@@ -191,12 +134,11 @@ const decrementDragonAttributes = () => {
     });
 
     // Guardar cambios en el archivo
-    saveDragons(dragons);
+    await saveDragons(dragons);
 };
 
-const evolveDragon = (dragonId) => {
-    let dragons = getAllDragons();
-    const dragon = findDragonById(dragonId);
+const evolveDragon = async (dragonId) => {
+    const dragon = await findDragonById(dragonId);
 
     // Comprobar si el dragón existe y si está en estado 'egg'
     if (dragon && dragon.stage === 'egg') {
@@ -209,12 +151,11 @@ const evolveDragon = (dragonId) => {
             const evolvedDragon = {
                 ...dragon,
                 stage: 'mini',
-                imageUrl: `/public/sprites/dragons/${selectDragonImage()}`, 
+                imageUrl: `/public/sprites/dragons/${await selectDragonImage()}`, 
                 hungry: 0, 
             };
 
-            dragons = dragons.map(d => (d.id === evolvedDragon.id ? evolvedDragon : d));
-            saveDragons(dragons);
+            await Dragon.findOneAndUpdate({ id: dragonId }, evolvedDragon, { upsert: true });
 
             return evolvedDragon;  
         } else if (!willHatch) {
@@ -233,7 +174,7 @@ const evolveDragon = (dragonId) => {
             const evolvedDragon = {
                 ...dragon,
                 stage: 'adult',
-                imageUrl: `/public/sprites/dragons/${selectDragonImage()}`,
+                imageUrl: `/public/sprites/dragons/${await selectDragonImage()}`,
                 energy: Math.max(dragon.energy - 10, 0),  // Reduce energy
                 hungry: Math.max(dragon.hungry - 10, 0),  // Reduce hunger
                 health: Math.max(dragon.health - 10, 0),  // Reduce health
@@ -246,9 +187,7 @@ const evolveDragon = (dragonId) => {
                 attack: Math.min(dragon.attack, 30)
             };
 
-            // Update the dragon in the list and save it
-            dragons = dragons.map(d => (d.id === evolvedDragon.id ? evolvedDragon : d));
-            saveDragons(dragons);
+            await Dragon.findOneAndUpdate({ id: dragonId }, evolvedDragon, { upsert: true });
 
             return evolvedDragon;  // Return the evolved adult dragon
         }
@@ -292,20 +231,8 @@ const characterModel = {
     trainDragon,
     evolveDragon,
 
-    breedDragons: (dragon1Id, dragon2Id) => {
-        const dragons = getAllDragons();
-        const dragon1 = findDragonById(dragon1Id);
-        const dragon2 = findDragonById(dragon2Id);
+    breedDragons,
 
-        if (!dragon1 || !dragon2) return null;
-
-        const newEgg = breedDragons(dragon1, dragon2);
-        if (newEgg) {
-            dragons.push(newEgg);
-            saveDragons(dragons);
-        }
-        return newEgg;
-    },
 
     hatchEgg: (eggId) => {
         let dragons = getAllDragons();
@@ -326,14 +253,14 @@ const characterModel = {
         return null;
     },
 
-    evolveMiniDragon: (dragonId) => {
-        let dragons = getAllDragons();
+    evolveMiniDragon: async (dragonId) => {
+        let dragons = await getAllDragons();
         const dragonIndex = dragons.findIndex(d => d.id === dragonId);
 
         if (dragonIndex >= 0 && dragons[dragonIndex].stage === 'mini') {
             const evolvedDragon = generateRandomDragon(dragons[dragonIndex]);
             dragons[dragonIndex] = evolvedDragon;
-            saveDragons(dragons);
+            await saveDragons(dragons);
             return evolvedDragon;
         }
         return null;

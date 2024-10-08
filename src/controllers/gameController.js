@@ -2,24 +2,36 @@ const characterModel = require('../models/characterModel');
 const gameModel = require('../models/gameModel');
 
 
-exports.select = (req, res) => {
-    const characters = characterModel.getAllCharacters();
-    res.render('characters/select', { characters });
+exports.select = async (req, res) => {
+    try {
+        const characters = await characterModel.getAllCharacters(); // Asegúrate de usar await
+        res.render('characters/select', { characters });
+    } catch (error) {
+        res.status(500).send('Error al seleccionar personajes');
+    }
 };
 
 
-exports.chooseCharacter = (req, res) => {
-    const gameState = gameModel.getGameState();
-    gameState.characterId = parseInt(req.body.characterId);
-    gameModel.saveGameState(gameState);
-    res.redirect('/game');
+exports.chooseCharacter = async (req, res) => {
+    try {
+        const gameState = await gameModel.getGameState();  // Asegúrate de usar await
+        gameState.characterId = parseInt(req.body.characterId);
+        await gameModel.saveGameState(gameState);  // Guardar estado del juego
+        res.redirect('/game');
+    } catch (error) {
+        res.status(500).send('Error al seleccionar el personaje');
+    }
 };
 
 
-exports.view = (req, res) => {
-    const gameState = gameModel.getGameState();
-    const character = characterModel.findCharacterById(gameState.characterId); 
-    res.render('game', { character });
+exports.view = async (req, res) => {
+    try {
+        const gameState = await gameModel.getGameState();  // Usar await
+        const character = await characterModel.findCharacterById(gameState.characterId);
+        res.render('game', { character });
+    } catch (error) {
+        res.status(500).send('Error al cargar el juego');
+    }
 };
 
 exports.index = (req, res) => {
@@ -55,41 +67,21 @@ function getRandomEgg() {
     }
 }
 
-exports.breed = (req, res) => {
-    const dragon1Id = parseInt(req.body.dragon1Id);
-    const dragon2Id = parseInt(req.body.dragon2Id);
+exports.breed = async (req, res) => {
+    try {
+        const dragon1Id = parseInt(req.body.dragon1Id);
+        const dragon2Id = parseInt(req.body.dragon2Id);
 
-    const newEgg = characterModel.breedDragons(dragon1Id, dragon2Id);
-    if (newEgg) {
-        res.json({ message: 'New egg created', egg: newEgg });
-    } else {
-        res.status(400).json({ message: 'Unable to breed dragons' });
+        const newEgg = await characterModel.breedDragons(dragon1Id, dragon2Id); // Llamar a la función asíncrona
+        if (newEgg) {
+            res.json({ message: 'New egg created', egg: newEgg });
+        } else {
+            res.status(400).json({ message: 'Unable to breed dragons' });
+        }
+    } catch (error) {
+        res.status(500).send('Error al reproducir dragones');
     }
 };
-
-/*exports.hatchEgg = (req, res) => {
-    const eggId = parseInt(req.body.eggId);
-    const newDragon = characterModel.hatchEgg(eggId);
-    
-    if (newDragon) {
-        res.json({ message: 'Egg hatched!', dragon: newDragon });
-    } else {
-        res.status(400).json({ message: 'The egg did not hatch' });
-    }
-};
-
-
-exports.evolveDragon = (req, res) => {
-    const dragonId = parseInt(req.body.dragonId);
-    const evolvedDragon = characterModel.evolveMiniDragon(dragonId);
-
-    if (evolvedDragon) {
-        res.json({ message: 'Mini dragon evolved!', dragon: evolvedDragon });
-    } else {
-        res.status(400).json({ message: 'Unable to evolve mini dragon' });
-    }
-};*/
-
 
 exports.regenerateAttributes = (req, res) => {
     const dragonId = parseInt(req.params.id);  
@@ -143,9 +135,13 @@ exports.regenerateAttributes = (req, res) => {
 };
 
 
-exports.openMysteryBox = (req, res) => {
-    const newDragon = characterModel.openMysteryBox();
-    res.json({ message: 'You received a new dragon!', dragon: newDragon });
+exports.openMysteryBox = async (req, res) => {
+    try {
+        const newDragon = await characterModel.openMysteryBox();  // Usar await
+        res.json({ message: 'You received a new dragon!', dragon: newDragon });
+    } catch (error) {
+        res.status(500).send('Error al abrir la caja misteriosa');
+    }
 };
 
 
