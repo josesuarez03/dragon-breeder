@@ -24,7 +24,7 @@ router.get('/characters/:id/edit', characterController.edit);
 router.post('/characters/:id/update', characterController.update);
 router.post('/characters/:id/delete', characterController.delete);
 
-
+//Ruta para regenerar atributos
 router.post('/dragon/:id/action', gameController.regenerateAttributes);
 
 // Ruta para combatir

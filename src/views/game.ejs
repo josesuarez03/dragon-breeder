@@ -41,50 +41,31 @@
     </div>
 </div>
 
-<script>
-    function regenerateAttributes(dragonId, action) {
-        fetch(`/dragon/${dragonId}/action`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ action: action })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (action === 'feed') {
-                console.log('¡Dragón alimentado! Energía restaurada.');
-            } else if (action === 'heal') {
-                console.log('¡Dragón curado! Salud restaurada.');
-            } else if (action === 'battle') {
-                console.log('¡Batalla iniciada!');
-            } else if (action === 'train') {
-                console.log('Dragon entrenado');
-            } else if (action === 'evolve') {
-                console.log('Dragón evolucionado');
-            }
-            location.reload();
-        })
-        .catch(error => console.error('Error:', error));
+<script type="module">
+    import { feedDragon, healDragon, startBattle, trainDragon, evolveDragon } from './apiRest.js';
+
+    window.handleFeedDragon = async function(dragonId) {
+        await feedDragon(dragonId);
+        location.reload();
     }
 
-    function feedDragon(dragonId) {
-        regenerateAttributes(dragonId, 'feed');
+    window.handleHealDragon = async function(dragonId) {
+        await healDragon(dragonId);
+        location.reload();
     }
 
-    function healDragon(dragonId) {
-        regenerateAttributes(dragonId, 'heal');
+    window.handleStartBattle = async function(dragonId) {
+        await startBattle(dragonId);
+        location.reload();
     }
 
-    function startBattle(dragonId) {
-        regenerateAttributes(dragonId, 'battle');
+    window.handleTrainDragon = async function(dragonId) {
+        await trainDragon(dragonId);
+        location.reload();
     }
 
-    function trainDragon(dragonId) {
-        regenerateAttributes(dragonId, 'train');
-    }
-
-    function evolveDragon(dragonId) {
-        regenerateAttributes(dragonId, 'evolve');
+    window.handleEvolveDragon = async function(dragonId) {
+        await evolveDragon(dragonId);
+        location.reload();
     }
 </script>
