@@ -20,10 +20,21 @@ const saveUser = async (updatedUser) => {
     await User.findOneAndUpdate({ _id: updatedUser._id }, updatedUser, { upsert: true });
 };
 
+const deleteUser = async (id) => {
+    return await User.findByIdAndDelete(id);
+};
+
+// Obtener usuarios en línea
+const getOnlineUsers = async () => {
+    return await User.find({ isOnline: true });
+};
+
 // Exportar las funciones
 module.exports = {
     getAllUsers,
     saveUsers,
     findUserById,
-    saveUser
+    saveUser,
+    deleteUser,
+    getOnlineUsers
 };
