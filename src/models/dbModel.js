@@ -32,6 +32,7 @@ const usersCollection = new  mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
     dragons: [dragonCollection], // Array de dragones del usuario
     gameState: [gameStateCollection], // Estado del juego del usuario
+    isOnline: {type: Boolean, default: false}
 });
 
 // Middleware para hashear la contraseña antes de guardar el usuario
