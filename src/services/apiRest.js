@@ -62,7 +62,7 @@ export function register() {
     const password = document.getElementById('password').value;
     const email = document.getElementById('email').value;
 
-    fetch(`${BASE_URL}/register`, {
+    fetch(`${BASE_URL}/register`, {   
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -71,20 +71,21 @@ export function register() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
-            window.location.href = '/login';
+        if (response.status === 201) { 
+            window.location.href = '/login'; 
         } else {
-            alert(data.message);
+            alert(data.message);  
         }
     })
     .catch(error => console.error('Error:', error));
 }
 
-export function login (){
+// Login function
+export function login() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
-    fetch(`${BASE_URL}/login`, {
+    fetch(`${BASE_URL}/login`, {   
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -93,10 +94,10 @@ export function login (){
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
-            window.location.href = '/';
+        if (response.status === 200) {  
+            window.location.href = '/'; 
         } else {
-            alert(data.message);
+            alert(data.message);  
         }
     })
     .catch(error => console.error('Error:', error));
