@@ -35,9 +35,9 @@ router.post('/characters/:id/special-attack', characterController.specialAttack)
 router.post('/characters/:id/normal-attack', characterController.normalAttack);
 
 // Ruta para los usuarios
-router.post('/users/register', userController.register);   
-router.post('/users/login', userController.login);         
-router.post('/users/logout', userController.logout);       
+router.post('/register', userController.register);   
+router.post('/login', userController.login);         
+router.post('/logout', userController.logout);       
 
 // Rutas para editar y eliminar usuarios
 router.post('/users/:id/edit', authMiddleware, userController.edit);    
