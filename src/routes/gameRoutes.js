@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const gameController = require('../controllers/gameController');
 const characterController = require('../controllers/characterController')
+const authMiddleware = require('../middlewares/authMiddleware');
+const userController = require('../controllers/usersController');
 
 // Ruta principal del juego
 router.get('/', gameController.view);
@@ -32,5 +34,16 @@ router.get('/characters/:id/battle', characterController.battle);
 router.post('/characters/:id/special-attack', characterController.specialAttack);
 router.post('/characters/:id/normal-attack', characterController.normalAttack);
 
+// Ruta para los usuarios
+router.post('/users/register', userController.register);   
+router.post('/users/login', userController.login);         
+router.post('/users/logout', userController.logout);       
+
+// Rutas para editar y eliminar usuarios
+router.post('/users/:id/edit', authMiddleware, userController.edit);    
+router.post('/users/:id/delete', authMiddleware, userController.delete); 
+
+// Ruta para listar usuarios en línea
+router.get('/users/online', authMiddleware, userController.onlineUsers); 
 
 module.exports = router;
