@@ -1,4 +1,5 @@
 const { createUser, findUserByUsername, updateUser } = require('../models/usersModel');
+const {User} = require('../models/dbModel');
 
 // Método para mostrar y procesar el registro de usuarios
 exports.register = async (req, res) => {
@@ -43,7 +44,7 @@ exports.login = async (req, res) => {
 
     try {
         // Buscar el usuario por nombre de usuario
-        const user = await findUserByUsername(username);
+        const user = await User.findOne({ username });
 
         if (!user) {
             return res.status(401).json({ message: 'Credenciales inválidas' });
