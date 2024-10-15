@@ -3,23 +3,29 @@ const bcrypt = require('bcrypt');
 
 const dragonCollection = new mongoose.Schema({
     name: String,
-    hungry: Number,
-    energy: Number,
-    health: Number,
-    speed: Number,
-    strength: Number,
-    agility: Number,
-    intelligence: Number,
-    defense: Number,
-    attack: Number,
-    specialAbilities: Boolean,
-    availableForBattle: Boolean,
+    type: {
+        type: String,
+        enum: ['blackDragon', 'greenDragon', 'orangeDragon', 'chicken', 'dragon'],
+        required: true
+    },
+    stage: {type: String, enum: ['egg', 'adult', 'mini'], required: true},
+    hungry: {type: Number, default: 0},
+    energy: {type: Number, default: 0},
+    health: {type: Number, default: 0 },
+    speed: {type: Number, default: 0},
+    strength: {type: Number, default: 0},
+    agility: {type: Number, default: 0},
+    intelligence: {type: Number, default: 0},
+    defense: { type: Number, default: 0},
+    attack: {type: Number, default: 0},
+    specialAbilities: { type: Boolean, default: false},
+    availableForBattle: {type: Boolean ,default: false},
     imageUrl:  String,
     userId: mongoose.Schema.Types.ObjectId  // ID del usuario que posee el dragón
 });
 
 const gameStateCollection = new mongoose.Schema({
-    characterId: Number,
+    characterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Dragon' },
     UUID: Number,
 });
 
@@ -59,6 +65,6 @@ usersCollection.methods.comparePassword = async function (candidatePassword) {
 
 const Dragon = mongoose.model('Dragon', dragonCollection);
 const GameState = mongoose.model('GameState', gameStateCollection);
-const User = mongoose.model('User', userscollection);
+const User = mongoose.model('User', usersCollection);
 
 module.exports ={Dragon, GameState, User}
