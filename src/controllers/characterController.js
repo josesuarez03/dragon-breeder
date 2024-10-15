@@ -73,7 +73,7 @@ exports.delete = async (req, res) => {
     }
 };
 
-exports.battle = async (req, res) => {
+/*exports.battle = async (req, res) => {
     try {
         const playerDragon = await characterModel.findCharacterById(req.params.id);
         const machineDragon = {
@@ -106,6 +106,6 @@ exports.battle = async (req, res) => {
     } catch (error) {
         res.status(500).send('Error al iniciar la batalla');
     }
-};
+};*/
 
 // Los controladores de ataques especiales y normales también deben manejar `async/await`
