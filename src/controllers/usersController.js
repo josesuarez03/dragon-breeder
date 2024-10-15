@@ -42,6 +42,8 @@ exports.login = async (req, res) => {
 
     const { username, password } = req.body;
 
+    console.log(req.body);
+
     try {
         // Buscar el usuario por nombre de usuario
         const user = await User.findOne({ username });
@@ -60,6 +62,17 @@ exports.login = async (req, res) => {
         // Si el login es exitoso, actualizamos el estado `isOnline` del usuario
         await updateUser(user._id, { isOnline: true });
 
+        // Verificar el rol del usuario
+        const userRole = user.role ? 'true' : 'false';
+
+
+        // Aquí puedes agregar lógica adicional basada en el rol si es necesario
+        if (userRole === 'true') {
+            responseData.adminMessage = 'Bienvenido, administrador';
+            // Podrías agregar más datos o permisos específicos para administradores
+        }
+        
+
         return res.status(200).json({ message: 'Inicio de sesión exitoso', user });
     } catch (error) {
         res.status(500).json({ message: 'Error al iniciar sesión', error });
@@ -75,8 +88,8 @@ exports.logout = async (req, res) => {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
-        // Actualizar el estado isOnline a false cuando el usuario cierra sesión
-        await usersModel.updateUser(user._id, { isOnline: false });
+        // Actualizar el estado online del usuario
+        await updateUser(user._id, { isOnline: false });
 
         return res.status(200).json({ message: 'Cierre de sesión exitoso', user });
 
