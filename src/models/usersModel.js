@@ -82,14 +82,37 @@ const findUserById = async (id) => {
         throw error;
     }
 };
+// Función para encontrar un usuario por nombre de usuario
+const findUserByUsername = async (username) => {
+    try {
+        return await User.findOne({ username });
+    } catch (error) {
+        console.error('Error al buscar usuario por nombre de usuario:', error);
+        throw error;
+    }
+};
+
+// Función para actualizar un usuario
+const updateUser = async (userId, updateData) => {
+    try {
+        return await User.findByIdAndUpdate(userId, updateData, { new: true });
+    } catch (error) {
+        console.error('Error al actualizar usuario:', error);
+        throw error;
+    }
+};
+
+// Mantenemos la función createUser sin cambios si ya maneja el hashing de contraseñas correctamente
 
 // Exportar las funciones
 module.exports = {
     getAllUsers,
-    createUser,       // Renombrado para más claridad
+    createUser,
     saveUser,
     findUserById,
     deleteUser,
     getOnlineUsers,
     initUserCollection,
+    findUserByUsername,  // Nueva exportación
+    updateUser,          // Nueva exportación
 };
