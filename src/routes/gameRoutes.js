@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const gameController = require('../controllers/gameController');
 const characterController = require('../controllers/characterController')
-const authMiddleware = require('../middlewares/authMiddleware');
+const authMiddleware = require('../middleware/authMiddleware');
 const userController = require('../controllers/usersController');
 
 // Ruta principal del juego
@@ -30,20 +30,25 @@ router.post('/characters/:id/delete', characterController.delete);
 router.post('/dragon/:id/action', gameController.regenerateAttributes);
 
 // Ruta para combatir
-router.get('/characters/:id/battle', characterController.battle);
+/*router.get('/characters/:id/battle', characterController.battle);
 router.post('/characters/:id/special-attack', characterController.specialAttack);
-router.post('/characters/:id/normal-attack', characterController.normalAttack);
+router.post('/characters/:id/normal-attack', characterController.normalAttack);*/
 
 // Ruta para los usuarios
-router.post('/register', userController.register);   
-router.post('/login', userController.login);         
+router.route('/login')
+    .get(userController.login)   // Renderiza el formulario de login
+    .post(userController.login); // Procesa el inicio de sesión
+
+router.route('/register')
+    .get(userController.register)   // Renderiza el formulario de registro
+    .post(userController.register); // Procesa el registro      
 router.post('/logout', userController.logout);       
 
 // Rutas para editar y eliminar usuarios
-router.post('/users/:id/edit', authMiddleware, userController.edit);    
-router.post('/users/:id/delete', authMiddleware, userController.delete); 
+router.post('/users/:id/edit',  userController.edit);    //agregar authMiddleware
+router.post('/users/:id/delete',  userController.delete); //agregar authMiddleware
 
 // Ruta para listar usuarios en línea
-router.get('/users/online', authMiddleware, userController.onlineUsers); 
+router.get('/users/online',  userController.onlineUsers); //agregar authMiddleware
 
 module.exports = router;
