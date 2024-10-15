@@ -3,13 +3,44 @@ const path = require('path');
 
 const {Dragon} = require('./dbModel')
 
-//const dragonSpritesPath = path.join(__dirname, '../public/sprites/dragons');
-//const eggSpritesPath = path.join(__dirname, '../public/sprites/eggs');
+const dragonSpritesPath = path.join(__dirname, '../public/sprites/dragons');
+const eggSpritesPath = path.join(__dirname, '../public/sprites/eggs');
 
 const eggHatchingProbability = 0.8;
 
-const getAllDragons = async() => {
-    return await Dragon.find();
+const initDragonCollection = async () => {
+    try {
+      await Dragon.createCollection();
+      console.log('Dragon collection created or verified');
+    } catch (error) {
+      console.error('Error creating Dragon collection:', error);
+      throw error;
+    }
+  };
+
+const getAllDragons = async () => {
+    try {
+        await initDragonCollection();
+        const dragons = await Dragon.find().maxTimeMS(30000).exec();
+        if (dragons.length === 0) {
+            console.log("No se encontraron dragones en la base de datos.");
+        }
+        return dragons;
+    } catch (error) {
+        console.error("Error al obtener los dragones:", error);
+        throw error;
+    }
+};
+
+const createDragon = async (dragonData) => {
+    try {
+        const newDragon = new Dragon(dragonData);
+        await newDragon.save();
+        return newDragon;
+    } catch (error) {
+        console.error("Error al crear el dragón:", error);
+        throw error;
+    }
 };
 
 const saveDragons = async (dragons) => {
@@ -32,7 +63,7 @@ const selectDragonImage = async () => {
 };
 
 const selectEggImage = async (type) => {
-    const eggImages = await fs.promises.readdir(eggSpritesPath);  // Versión asíncrona
+    const eggImages = await fs.promises.readdir(eggSpritesPath);
     const availableEggs = eggImages.filter(image => image.includes(type));
     return availableEggs[Math.floor(Math.random() * availableEggs.length)];
 };
@@ -217,11 +248,41 @@ const generateRandomDragon = (adultDragon) => {
             stage: 'adult'
         };
     }
-  };
+};
 
+function getRandomEgg() {
+    const random = Math.random() * 100;
+
+    if (random <= 25) {
+        return 'blackDragon';  // Dragón negro
+    } else if (random <= 50) {
+        return 'greenDragon';  // Dragón verde
+    } else if (random <= 75) {
+        return 'orangeDragon'; // Dragón naranja
+    } else {
+        return 'chicken';      // Gallina
+    }
+};
+
+const createEgg = async (eggType, userId) => {
+    const eggImage = await selectEggImage(eggType);
+    const newEgg = new Dragon({
+        name: `${eggType} Egg`,
+        type: eggType,
+        stage: 'egg',
+        imageUrl: `/public/sprites/eggs/${eggImage}`,
+        userId: userId
+    });
+    await newEgg.save();
+    return newEgg;
+};
 
 // Dragon model functions
 const characterModel = {
+    initDragonCollection,
+    createDragon,
+    getRandomEgg,
+    createEgg,
     getAllCharacters: getAllDragons,
 
     findCharacterById: findDragonById,
