@@ -1,5 +1,12 @@
 const characterModel = require('../models/characterModel');
 const gameModel = require('../models/gameModel');
+const usersModel = require('../models/usersModel');
+
+const initializeCollections = async () => {
+    await gameModel.initGameStateCollection();
+    await characterModel.initDragonCollection();
+    await usersModel.initUserCollection();
+};
 
 
 exports.select = async (req, res) => {
@@ -26,46 +33,84 @@ exports.chooseCharacter = async (req, res) => {
 
 exports.view = async (req, res) => {
     try {
+        await initializeCollections();
         const gameState = await gameModel.getGameState();  // Usar await
-        const character = await characterModel.findCharacterById(gameState.characterId);
-        res.render('game', { character });
+        const character = await characterModel.getAllCharacters();
+        res.render('game', { gameState, character });
     } catch (error) {
+        console.error('Error initializing game:', error);
         res.status(500).send('Error al cargar el juego');
     }
 };
 
-exports.index = (req, res) => {
-    const selectedCharacter = req.session.selectedCharacter;
-
-    if (!selectedCharacter) {
-        return res.redirect('/box-eggs');
+exports.index = async (req, res) => {
+    if (!req.session.userId){
+        return res.redirect('/login');
     }
+    try {
+        const user = await usersModel.getUserById(req.session.userId);
+        const gameState = await gameModel.getGameState(req.session.userId);
+        const dragons = await characterModel.getAllDragons(req.session.userId);
 
-    res.render('game', {
-        title: 'Dragon Breeder Game',
-        character: selectedCharacter
-    });
+        if (dragons.length === 0) {
+            return res.redirect('/box-eggs');
+        }
+
+        res.render('game', {
+            title: 'Dragon Breeder Game',
+            user,
+            gameState,
+            dragons
+        });
+    } catch (error) {
+        console.error('Error loading game:', error);
+        res.status(500).send('Error al cargar el juego');
+    }
+};
+
+exports.register = (req, res) => {
+    res.render('register');
+};
+
+exports.createUser = async (req, res) => {
+    try {
+        const userData = req.body;
+        const newUser = await usersModel.createUser(userData);
+        req.session.userId = newUser._id;
+        await gameModel.createGameState(newUser._id);
+        res.redirect('/create-dragon');
+    } catch (error) {
+        console.error('Error creating user:', error);
+        res.status(500).send('Error al crear el usuario');
+    }
+};
+
+exports.saveDragon = async (req, res) => {
+    try {
+        const dragonData = {
+            ...req.body,
+            userId: req.session.userId
+        };
+        await characterModel.createDragon(dragonData);
+        res.redirect('/');
+    } catch (error) {
+        console.error('Error saving dragon:', error);
+        res.status(500).send('Error al guardar el dragón');
+    }
 };
 
 // Randomizador de huevos
-exports.eggRandomizer = (req, res) => {
-    const egg = getRandomEgg(); 
-    res.render('box-eggs', { egg });
+exports.eggRandomizer = async (req, res) => {
+    try {
+        const eggType = characterModel.getRandomEgg();
+        const newEgg = await characterModel.createEgg(eggType, req.session.userId);
+        res.render('box-eggs', { egg: newEgg });
+    } catch (error) {
+        console.error('Error al crear el huevo:', error);
+        res.status(500).send('Error al crear el huevo');
+    }
 };
 
-function getRandomEgg() {
-    const random = Math.random() * 100;
-
-    if (random <= 25) {
-        return 'blackDragon';  // Dragón negro
-    } else if (random <= 50) {
-        return 'greenDragon';  // Dragón verde
-    } else if (random <= 75) {
-        return 'orangeDragon'; // Dragón naranja
-    } else {
-        return 'chicken';      // Gallina
-    }
-}
 
 exports.breed = async (req, res) => {
     try {
