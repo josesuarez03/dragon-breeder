@@ -14,6 +14,12 @@ exports.create = (req, res) => {
 };
 
 exports.store = async (req, res) => {
+
+    if (!req.session.userId) {
+        // Si no hay sesión de usuario, redirigir al login
+        return res.redirect('/login');
+    }
+
     try {
         const newCharacter = {
             name: req.body.name,
@@ -29,7 +35,8 @@ exports.store = async (req, res) => {
             attack: parseFloat(req.body.attack),
             stage: req.body.stage,
             imageUrl: req.body.imageUrl,
-            availableForBattle: false
+            availableForBattle: false,
+            userId: req.session.userId
         };
 
         await characterModel.saveDragon(newCharacter); // Guardar usando el modelo
