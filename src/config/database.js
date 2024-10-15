@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
+//const { GameState, Dragon } = require('./dbModel');
 
 const {
     MONGO_HOST,
@@ -11,22 +12,25 @@ const {
 
 let mongoURL;
 
+const uri = process.env.MONGO_URI;
+
 if (MONGO_USER && MONGO_PASSWORD) {
-  mongoURL = `mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}`;
+  mongoURL = `mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}?authSource=admin`;
 } else {
   mongoURL = `mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}`;
 }
 
+console.log("MongoDB URI:", mongoURL);
+
 const connectDB = async () => {
   try {
-    await mongoose.connect(mongoURL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(mongoURL);
     console.log("MongoDB connected successfully");
+
   } catch (error) {
     console.error("MongoDB connection error:", error);
-    process.exit(1); 
+    setTimeout(connectDB, 5000);
+    throw error; // Lanzamos el error para manejarlo en el caller
   }
 };
 
