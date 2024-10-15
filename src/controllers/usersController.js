@@ -1,50 +1,74 @@
-const { User } = require('../models/dbModel');
-const usersModel = require('../models/usersModel');
+const { createUser, findUserByUsername, updateUser } = require('../models/usersModel');
 
+// Método para mostrar y procesar el registro de usuarios
 exports.register = async (req, res) => {
+    if (req.method === 'GET') {
+        return res.render('register');  // Renderiza la vista de registro si es una solicitud GET
+    }
+
     const { username, password, email } = req.body;
 
-    try{
-        const newUser = new User({ username, password, email });
-        await usersModel.saveUser();
+    if (!username || !email || !password) {
+        return res.status(400).json({ message: 'Faltan campos requeridos: username, email, o password' });
+    }
 
+    try {
+        // Verificar si el nombre de usuario ya existe
+        const existingUser = await getUserByUsername(username);
+        if (existingUser) {
+            return res.status(400).json({ message: 'El nombre de usuario ya está en uso' });
+        }
+
+        // Verificar si el correo electrónico ya existe
+        const existingEmail = await getUserByEmail(email);
+        if (existingEmail) {
+            return res.status(400).json({ message: 'El correo electrónico ya está en uso' });
+        }
+
+        const newUser = await createUser({ username, password, email });
         res.status(201).json({ message: 'Usuario registrado exitosamente', user: newUser });
-    }catch{
+    } catch (error) {
+        console.error("Error al crear el usuario:", error);
         res.status(500).json({ message: 'Error al registrar el usuario', error });
     }
 };
 
+// Método para mostrar y procesar el login de usuarios
 exports.login = async (req, res) => {
+    if (req.method === 'GET') {
+        return res.render('login');  // Renderiza la vista de login si es una solicitud GET
+    }
+
     const { username, password } = req.body;
 
     try {
-        // Buscar usuario por su nombre de usuario
-        const user = await usersModel.findUserByUsername(username);
-        const passwordHash = await user.comparePassword(password);
+        // Buscar el usuario por nombre de usuario
+        const user = await findUserByUsername(username);
 
-        if (!user || user.password !== passwordHash) {
+        if (!user) {
             return res.status(401).json({ message: 'Credenciales inválidas' });
         }
 
-        // Actualizar el estado isOnline a true cuando el usuario inicia sesión
-        await usersModel.updateUser(user._id, { isOnline: true });
+        // Comparar la contraseña ingresada con la almacenada
+        const isMatch = await user.comparePassword(password);
 
-        if (user.role === true) {
-            return res.status(200).json({ message: 'Inicio de sesión exitoso como administrador', user });
-        } else {
-            return res.status(200).json({ message: 'Inicio de sesión exitoso', user });
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Credenciales inválidas' });
         }
 
+        // Si el login es exitoso, actualizamos el estado `isOnline` del usuario
+        await updateUser(user._id, { isOnline: true });
+
+        return res.status(200).json({ message: 'Inicio de sesión exitoso', user });
     } catch (error) {
         res.status(500).json({ message: 'Error al iniciar sesión', error });
     }
 };
-
 exports.logout = async (req, res) => {
     const { username } = req.body;  // O puedes usar el `id` del usuario almacenado en la sesión
 
     try {
-        const user = await usersModel.findUserByUsername(username);
+        const user = await findUserByUsername(username);
         
         if (!user) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
