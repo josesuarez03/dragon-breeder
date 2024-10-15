@@ -73,7 +73,11 @@ exports.login = async (req, res) => {
         }
         
 
-        return res.status(200).json({ message: 'Inicio de sesión exitoso', user });
+        if (userRole === 'true') {
+            return res.redirect('/admin/dashboard'); // Redirigir a un panel de administrador
+        } else {
+            return res.redirect('/game'); // Redirigir al juego si es un usuario normal
+        }
     } catch (error) {
         res.status(500).json({ message: 'Error al iniciar sesión', error });
     }
