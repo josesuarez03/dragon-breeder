@@ -25,8 +25,16 @@ const dragonCollection = new mongoose.Schema({
 });
 
 const gameStateCollection = new mongoose.Schema({
-    characterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Dragon' },
-    UUID: Number,
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    characterId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Dragon'
+    },
+    uuid: String
 });
 
 const usersCollection = new  mongoose.Schema({
