@@ -32,18 +32,19 @@
 
     <div class="action-buttons">
         <% if (character) { %>
-            <button class="btn-feed" onclick="feedDragon('<%= character.id %>')">Dar de Comer</button>
-            <button class="btn-heal" onclick="healDragon('<%= character.id %>')">Sanar</button>
-            <button class="btn-train" onclick="trainDragon('<%= character.id %>')">Entrenar</button>
-            <button class="btn-evolve" onclick="evolveDragon('<%= character.id %>')" <%= character.stage === 'adult' ? 'disabled' : '' %>>Evolucionar</button>
-            <button class="btn-battle" onclick="startBattle('<%= character.id %>')" <%= !character.availableForBattle ? 'disabled' : '' %>>Luchar</button>
+            <button class="btn-feed" onclick="handleFeedDragon('<%= character._id %>')">Dar de Comer</button>
+            <button class="btn-heal" onclick="handleHealDragon('<%= character._id %>')">Sanar</button>
+            <button class="btn-train" onclick="handleTrainDragon('<%= character._id %>')">Entrenar</button>
+            <button class="btn-evolve" onclick="handleEvolveDragon('<%= character._id %>')" <%= character.stage === 'adult' ? 'disabled' : '' %>>Evolucionar</button>
+            <button class="btn-battle" onclick="handleStartBattle('<%= character._id %>')" <%= !character.availableForBattle ? 'disabled' : '' %>>Luchar</button>
         <% } %>
     </div>
 </div>
 
 <script type="module">
-    import { feedDragon, healDragon, startBattle, trainDragon, evolveDragon } from './apiRest.js';
+    import { feedDragon, healDragon, startBattle, trainDragon, evolveDragon } from '/services/apiRest.js';
 
+    // Exponer las funciones al ámbito global (window)
     window.handleFeedDragon = async function(dragonId) {
         await feedDragon(dragonId);
         location.reload();
