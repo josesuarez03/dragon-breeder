@@ -20,7 +20,6 @@ if (MONGO_USER && MONGO_PASSWORD) {
   mongoURL = `mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}`;
 }
 
-console.log("MongoDB URI:", mongoURL);
 
 const connectDB = async () => {
   try {
@@ -48,4 +47,4 @@ process.on('SIGINT', async () => {
   process.exit(0);
 });
 
-module.exports = connectDB;
+module.exports = {connectDB, mongoURL};
