@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const gameController = require('../controllers/gameController');
 const characterController = require('../controllers/characterController')
-const authMiddleware = require('../middleware/authMiddleware');
+const {isAdmin, isAuthenticated} = require('../middleware/authMiddleware');
 const userController = require('../controllers/usersController');
 
 // Ruta principal del juego
@@ -45,16 +45,16 @@ router.route('/register')
 router.post('/logout', userController.logout);       
 
 // Rutas para editar y eliminar usuarios
-router.post('/users/:id/edit',  userController.edit);    //agregar authMiddleware
-router.post('/users/:id/delete',  userController.delete); //agregar authMiddleware
+router.post('/users/:id/edit', isAuthenticated, userController.edit);    //agregar authMiddleware
+router.post('/users/:id/delete', isAuthenticated, userController.delete); //agregar authMiddleware
 
 // Ruta para listar usuarios online
-router.get('/online-users', userController.onlineUsers); //agregar authMiddleware
+router.get('/online-users', isAuthenticated, userController.onlineUsers); //agregar authMiddleware
 
 // Ruta para el dashboard de administración (listar, editar, eliminar usuarios)
-router.get('/admin/dashboard', userController.dashboardAdmin);
-router.post('/admin/users/:id/edit', userController.edit);   // Editar usuario
-router.post('/admin/users/:id/delete', userController.delete); // Eliminar usuario
+router.get('/admin/dashboard',isAuthenticated, isAdmin, userController.dashboardAdmin);
+router.post('/admin/users/:id/edit',isAuthenticated, isAdmin, userController.edit);   // Editar usuario
+router.post('/admin/users/:id/delete',isAuthenticated, isAdmin, userController.delete); // Eliminar usuario
 
 
 module.exports = router;
