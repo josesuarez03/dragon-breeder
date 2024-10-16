@@ -1,4 +1,4 @@
-const BASE_URL = `http://localhost:${PORT}`;
+const BASE_URL = window.location.origin; // Usar la URL de la página actual
 
 export async function regenerateAttributes(dragonId, action) {
     try {
