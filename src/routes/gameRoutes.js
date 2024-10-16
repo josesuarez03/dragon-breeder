@@ -7,27 +7,28 @@ const userController = require('../controllers/usersController');
 
 // Ruta principal del juego
 router.get('/', gameController.view);
-router.get('/game', gameController.view);
-router.get('/game/select', gameController.select);
-router.post('/game/select', gameController.chooseCharacter);
+// Rutas del juego 
+router.get('/game', isAuthenticated, gameController.view);
+router.get('/game/select', isAuthenticated, gameController.select);
+router.post('/game/select', isAuthenticated, gameController.chooseCharacter);
 
-// Ruta para el randomizador de huevos
-router.get('/box-eggs', gameController.eggRandomizer);
+// Ruta para el randomizador de huevos 
+router.get('/box-eggs', isAuthenticated, gameController.eggRandomizer);
 
-// Ruta para cambiar de dragón
-router.get('/swap-dragon', gameController.swapDragon);
-router.post('/swap-dragon', gameController.selectDragon);
+// Ruta para cambiar de dragón 
+router.get('/swap-dragon', isAuthenticated, gameController.swapDragon);
+router.post('/swap-dragon', isAuthenticated, gameController.selectDragon);
 
-// CRUD routes for characters
-router.get('/characters', characterController.index);
-router.get('/characters/new', characterController.create);
-router.post('/characters', characterController.store);
-router.get('/characters/:id/edit', characterController.edit);
-router.post('/characters/:id/update', characterController.update);
-router.post('/characters/:id/delete', characterController.delete);
+// CRUD de personajes 
+router.get('/characters', isAuthenticated, characterController.index);
+router.get('/characters/new', isAuthenticated, characterController.create);
+router.post('/characters', isAuthenticated, characterController.store);
+router.get('/characters/:id/edit', isAuthenticated, characterController.edit);
+router.post('/characters/:id/update', isAuthenticated, characterController.update);
+router.post('/characters/:id/delete', isAuthenticated, characterController.delete);
 
-//Ruta para regenerar atributos
-router.post('/dragon/:id/action', gameController.regenerateAttributes);
+// Ruta para regenerar atributos del dragón 
+router.post('/dragon/:id/action', isAuthenticated, gameController.regenerateAttributes);
 
 // Ruta para combatir
 /*router.get('/characters/:id/battle', characterController.battle);
