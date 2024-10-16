@@ -104,6 +104,7 @@ exports.logout = async (req, res) => {
 
             res.clearCookie('connect.sid'); 
 
+            res.redirect('/');
             return res.status(200).json({ message: 'Cierre de sesión exitoso' });
         });
 
