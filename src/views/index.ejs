@@ -42,7 +42,11 @@
                         <a href="/characters/:id/battle" class="nav-link">Luchar</a>
                     </li>
                     <li class="nav-item">
-                        <a href="/login" class="nav-link">Iniciar Sesión</a>
+                        <% if (isAuthenticated) { %>
+                            <a href="/logout" class="nav-link">Cerrar Sesión</a>
+                        <% } else { %>
+                            <a href="/login" class="nav-link">Iniciar Sesión</a>
+                        <% } %>
                     </li>
                     <li class="nav-item">
                         <a href="/online-users" class="nav-link">Usuarios Online</a>
