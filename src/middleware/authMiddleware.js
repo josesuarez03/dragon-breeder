@@ -18,5 +18,9 @@ function isAdmin(req, res, next) {
         return res.status(401).send('Unauthorized');
     }
 };
+function addAuthToLocals(req, res, next) {
+    res.locals.isAuthenticated = !!(req.session && req.session.userId);
+    next();
+}
 
-module.exports = { isAuthenticated, isAdmin };
+module.exports = { isAuthenticated, isAdmin, addAuthToLocals };

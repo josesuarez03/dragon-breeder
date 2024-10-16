@@ -12,6 +12,7 @@ const usersModel = require('./models/usersModel');
 const MongoStore = require('connect-mongo');
 const passport = require('./config/passportConfig');
 const User = require('./models/usersModel');
+const { addAuthToLocals } = require('./middleware/authMiddleware');
 
 const app = express();
 
@@ -46,6 +47,8 @@ passport.deserializeUser(function(id, done) {
     done(err, user);
   });
 });
+
+app.use(addAuthToLocals);
 
 // Configuración del motor de plantillas EJS
 app.set('views', path.join(__dirname, 'views'));
