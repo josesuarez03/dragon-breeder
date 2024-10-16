@@ -3,22 +3,21 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const logger = require('morgan');
 const expressLayouts = require('express-ejs-layouts');
-const session = require('express-session'); // Asegúrate de instalar este paquete
+const session = require('express-session'); 
 const gameRoutes = require('../src/routes/gameRoutes');
 const characterModel = require('./models/characterModel');
 const {connectDB, mongoURL} = require('./config/database');
 const gameModel = require('./models/gameModel');
 const usersModel = require('./models/usersModel');
 const MongoStore = require('connect-mongo');
-const mongoose = require('mongoose');
+const passport = require('./config/passportConfig');
+const User = require('./models/usersModel');
 
 const app = express();
 
 app.use(logger('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
-console.log(mongoURL)
 
 // Configuración de sesión
 app.use(session({
@@ -34,6 +33,19 @@ app.use(session({
     collectionName: 'sessions'
   })
 }));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  User.findUserById(id, function(err, user) {
+    done(err, user);
+  });
+});
 
 // Configuración del motor de plantillas EJS
 app.set('views', path.join(__dirname, 'views'));
