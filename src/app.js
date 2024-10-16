@@ -6,9 +6,11 @@ const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session'); // Asegúrate de instalar este paquete
 const gameRoutes = require('../src/routes/gameRoutes');
 const characterModel = require('./models/characterModel');
-const connectDB = require('./config/database');
+const {connectDB, mongoURL} = require('./config/database');
 const gameModel = require('./models/gameModel');
 const usersModel = require('./models/usersModel');
+const MongoStore = require('connect-mongo');
+const mongoose = require('mongoose');
 
 const app = express();
 
@@ -16,11 +18,21 @@ app.use(logger('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+console.log(mongoURL)
+
 // Configuración de sesión
 app.use(session({
-  secret: 'tu_secreto_aqui',
+  secret: process.env.SESSION_SECRET || 'tu_secreto_aqui',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60000
+  },
+  store: MongoStore.create({
+    mongoUrl: mongoURL,
+    collectionName: 'sessions'
+  })
 }));
 
 // Configuración del motor de plantillas EJS
