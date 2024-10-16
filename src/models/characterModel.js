@@ -154,19 +154,29 @@ const openMysteryBox = async () => {
 };
 
 const decrementDragonAttributes = async () => {
-    let dragons = await getAllDragons();
-    dragons.forEach(dragon => {
+    // Obtener todos los dragones de la base de datos
+    let dragons = await getAllDragons(); // Asegúrate de que esta función esté devolviendo dragones de la base de datos
+    const updatePromises = dragons.map(async (dragon) => {
         // Disminuir hambre y energía con el tiempo
-        dragon.hungry = Math.max(dragon.hungry - 1, 0);  // Disminuir hambre, no menos de 0
-        dragon.energy = Math.max(dragon.energy - 1, 0);  // Disminuir energía, no menos de 0
+        const updatedDragon = await Dragon.findByIdAndUpdate(
+            dragon._id, // Asegúrate de usar el _id correcto
+            {
+                $set: {
+                    hungry: Math.max(dragon.hungry - 1, 0),  // Disminuir hambre, no menos de 0
+                    energy: Math.max(dragon.energy - 1, 0),  // Disminuir energía, no menos de 0
+                    availableForBattle: checkAvailableForBattle(dragon) // Método que tienes que definir
+                }
+            },
+            { new: true } // Devuelve el documento actualizado
+        );
 
-        // Actualizar disponibilidad para la batalla
-        dragon.availableForBattle = checkAvailableForBattle(dragon);
+        return updatedDragon; // Puedes manejar el dragón actualizado si es necesario
     });
 
-    // Guardar cambios en el archivo
-    await saveDragons(dragons);
+    // Espera a que todas las promesas se resuelvan
+    await Promise.all(updatePromises);
 };
+
 
 const evolveDragon = async (dragonId) => {
     const dragon = await findDragonById(dragonId);
@@ -180,13 +190,13 @@ const evolveDragon = async (dragonId) => {
         if (willHatch && dragon.energy === 100 && dragon.health === 100) {
             // Evolucionar a 'mini'
             const evolvedDragon = {
-                ...dragon,
+                ...dragon.toObject(), // Convertir a objeto plano si es necesario
                 stage: 'mini',
                 imageUrl: `/public/sprites/dragons/${await selectDragonImage()}`, 
-                hungry: 0, 
+                hungry: 0
             };
 
-            await Dragon.findOneAndUpdate({ id: dragonId }, evolvedDragon, { upsert: true });
+            await Dragon.findByIdAndUpdate(dragonId, evolvedDragon, { new: true });
 
             return evolvedDragon;  
         } else if (!willHatch) {
@@ -201,15 +211,15 @@ const evolveDragon = async (dragonId) => {
         const allAttributesMet = ['speed', 'strength', 'agility', 'intelligence', 'defense', 'attack'].every(attr => dragon[attr] >= 30);
 
         if (allAttributesMet) {
-            // Evolve to adult
+            // Evolucionar a adulto
             const evolvedDragon = {
-                ...dragon,
+                ...dragon.toObject(), // Asegúrate de usar el objeto plano
                 stage: 'adult',
                 imageUrl: `/public/sprites/dragons/${await selectDragonImage()}`,
                 energy: Math.max(dragon.energy - 10, 0),  // Reduce energy
                 hungry: Math.max(dragon.hungry - 10, 0),  // Reduce hunger
                 health: Math.max(dragon.health - 10, 0),  // Reduce health
-                // Cap physical attributes at 30
+                // Limitar atributos físicos a 30
                 speed: Math.min(dragon.speed, 30),
                 strength: Math.min(dragon.strength, 30),
                 agility: Math.min(dragon.agility, 30),
@@ -218,13 +228,13 @@ const evolveDragon = async (dragonId) => {
                 attack: Math.min(dragon.attack, 30)
             };
 
-            await Dragon.findOneAndUpdate({ id: dragonId }, evolvedDragon, { upsert: true });
+            await Dragon.findByIdAndUpdate(dragonId, evolvedDragon, { new: true });
 
-            return evolvedDragon;  // Return the evolved adult dragon
+            return evolvedDragon;  // Retorna el dragón evolucionado
         }
     }
 
-    return null;  // Could not evolve
+    return null;  // No se pudo evolucionar
 };
 
 // Generate a dragon with random characteristics
@@ -271,10 +281,34 @@ const createEgg = async (eggType, userId) => {
         type: eggType,
         stage: 'egg',
         imageUrl: `/public/sprites/eggs/${eggImage}`,
-        userId: userId
+        userId: userId,
+        hungry: 0,
+        energy: 0,
+        health: 0,
+        speed: 0,
+        strength: 0,
+        agility: 0,
+        intelligence: 0,
+        defense: 0,
+        attack: 0,
+        specialAbilities: false,
+        availableForBattle: false
     });
     await newEgg.save();
     return newEgg;
+};
+
+const deleteDragon = async (id) => {
+    try {
+        const result = await Dragon.findByIdAndDelete(id);
+        if (!result) {
+            throw new Error('Dragón no encontrado');
+        }
+        return result;
+    } catch (error) {
+        console.error('Error al eliminar el dragón:', error);
+        throw error;
+    }
 };
 
 // Dragon model functions
@@ -283,6 +317,7 @@ const characterModel = {
     createDragon,
     getRandomEgg,
     createEgg,
+    deleteDragon,
     getAllCharacters: getAllDragons,
 
     findCharacterById: findDragonById,
@@ -347,11 +382,6 @@ const characterModel = {
         return newDragon;
     },
 
-    deleteDragon: (id) => {
-        let dragons = getAllDragons();
-        dragons = dragons.filter(dragon => dragon.id !== id);
-        saveDragons(dragons);
-    }
 };
 
 

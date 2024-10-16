@@ -57,4 +57,18 @@ const saveGameState = async (state) => {
   }
 };
 
-module.exports = { getGameState, saveGameState, initGameStateCollection, createGameState };
+const updateGameState = async (userId, updateData) => {
+  try {
+    const updatedState = await GameState.findOneAndUpdate(
+      { userId },
+      { $set: updateData },
+      { new: true, upsert: true, maxTimeMS: 20000 }
+    );
+    return updatedState;
+  } catch (error) {
+    console.error("Error al actualizar el estado del juego:", error);
+    throw error;
+  }
+};
+
+module.exports = { getGameState, saveGameState, initGameStateCollection, createGameState, updateGameState };

@@ -1,6 +1,7 @@
 const characterModel = require('../models/characterModel');
 const gameModel = require('../models/gameModel');
 const usersModel = require('../models/usersModel');
+const mongoose = require('mongoose')
 
 const initializeCollections = async () => {
     await gameModel.initGameStateCollection();
@@ -21,24 +22,33 @@ exports.select = async (req, res) => {
 
 exports.chooseCharacter = async (req, res) => {
     try {
-        const gameState = await gameModel.getGameState();  // Asegúrate de usar await
-        gameState.characterId = parseInt(req.body.characterId);
-        await gameModel.saveGameState(gameState);  // Guardar estado del juego
+        const dragonId = req.body.characterId;
+        const userId = req.session.userId;
+
+        // Actualizar el gameState con el nuevo characterId
+        await gameModel.updateGameState(userId, { characterId: dragonId });
+
+        // Obtener el dragón seleccionado
+        const selectedDragon = await characterModel.findCharacterById(dragonId);
+
+        // Redirigir a la página del juego con el dragón seleccionado
         res.redirect('/game');
     } catch (error) {
-        res.status(500).send('Error al seleccionar el personaje');
+        console.error('Error al seleccionar el dragón:', error);
+        res.status(500).send('Error al seleccionar el dragón');
     }
 };
 
 
 exports.view = async (req, res) => {
     try {
-        await initializeCollections();
-        const gameState = await gameModel.getGameState();  // Usar await
-        const character = await characterModel.getAllCharacters();
+        const userId = req.session.userId;
+        const gameState = await gameModel.getGameState(userId);
+        const character = await characterModel.findCharacterById(gameState.characterId);
+
         res.render('game', { gameState, character });
     } catch (error) {
-        console.error('Error initializing game:', error);
+        console.error('Error al cargar el juego:', error);
         res.status(500).send('Error al cargar el juego');
     }
 };
@@ -102,15 +112,38 @@ exports.saveDragon = async (req, res) => {
 // Randomizador de huevos
 exports.eggRandomizer = async (req, res) => {
     try {
+        const userId = req.session.userId;
+        if (!userId) {
+            return res.status(401).send('Usuario no autenticado');
+        }
+
+        // Obtener el tipo de huevo aleatorio
         const eggType = characterModel.getRandomEgg();
-        const newEgg = await characterModel.createEgg(eggType, req.session.userId);
+
+        // Crear el nuevo huevo y asociarlo al usuario
+        const newEgg = await characterModel.createEgg(eggType, userId);
+
+        if (!newEgg) {
+            throw new Error('No se pudo crear el huevo');
+        }
+
+        // Actualizar el gameState con el nuevo characterId
+        await gameModel.updateGameState(userId, {
+            characterId: newEgg._id
+        });
+
+        // Actualizar el usuario con el nuevo dragón
+        await usersModel.updateUser(userId, {
+            $push: { dragons: newEgg._id }
+        });
+
         res.render('box-eggs', { egg: newEgg });
     } catch (error) {
         console.error('Error al crear el huevo:', error);
-        res.status(500).send('Error al crear el huevo');
+        res.status(500).send('Error al crear el huevo:'  + error.message);
+
     }
 };
-
 
 exports.breed = async (req, res) => {
     try {
@@ -128,55 +161,55 @@ exports.breed = async (req, res) => {
     }
 };
 
-exports.regenerateAttributes = (req, res) => {
-    const dragonId = parseInt(req.params.id);  
-    const action = req.body.action;  
+exports.regenerateAttributes = async (req, res) => {
+    try {
+        
+        const dragonId = new mongoose.Types.ObjectId(req.params.id);
+        const action = req.body.action;
 
-    let updatedDragon;
-    switch (action) {
-        case 'feed':
-            updatedDragon = characterModel.regenerateDragonAttributes(dragonId, 'feed');
-            if (updatedDragon) {
-                return res.json({ message: 'Dragon alimentado', dragon: updatedDragon });
-            }
-            break;
-        case 'heal':
-            updatedDragon = characterModel.regenerateDragonAttributes(dragonId, 'heal');
-            if (updatedDragon) {
-                return res.json({ message: 'Dragon curado', dragon: updatedDragon });
-            }
-            break;
+        let updatedDragon;
 
-        case 'train':
-            const dragonToTrain = characterModel.findCharacterById(dragonId); 
-            if (dragonToTrain) {
-                characterModel.trainDragon(dragonToTrain); 
-                return res.json({ message: 'Dragon entrenado', dragon: dragonToTrain });
-            }
-            break; 
-
-        case 'evolve':
-            const evolvedDragon = characterModel.evolveDragon(dragonId);
-            if (evolvedDragon) {
-                return res.json({ message: 'Dragón evolucionado', dragon: evolvedDragon });
-            } else {
-                return res.status(400).json({ message: 'No se pudo evolucionar el dragón.' });
-            }
-            
-        case 'battle':
-            const dragon = characterModel.findCharacterById(dragonId);
-            if (dragon && dragon.availableForBattle) {
-                // Aquí puedes añadir lógica adicional para la batalla
-                return res.json({ message: 'Batalla iniciada', dragon: dragon });
-            } else {
-                return res.status(400).json({ message: 'El dragón no está listo para la batalla' });
-            }
-        default:
-            return res.status(400).json({ message: 'Acción no reconocida' });
+        switch (action) {
+            case 'feed':
+                updatedDragon = await characterModel.regenerateDragonAttributes(dragonId, 'feed');
+                if (updatedDragon) {
+                    return res.json({ message: 'Dragón alimentado', dragon: updatedDragon });
+                }
+                break;
+            case 'heal':
+                updatedDragon = await characterModel.regenerateDragonAttributes(dragonId, 'heal');
+                if (updatedDragon) {
+                    return res.json({ message: 'Dragón curado', dragon: updatedDragon });
+                }
+                break;
+            case 'train':
+                const dragonToTrain = await characterModel.findCharacterById(dragonId); 
+                if (dragonToTrain) {
+                    await characterModel.trainDragon(dragonToTrain); 
+                    return res.json({ message: 'Dragón entrenado', dragon: dragonToTrain });
+                }
+                break;
+            case 'evolve':
+                const evolvedDragon = await characterModel.evolveDragon(dragonId);
+                if (evolvedDragon) {
+                    return res.json({ message: 'Dragón evolucionado', dragon: evolvedDragon });
+                } else {
+                    return res.status(400).json({ message: 'No se pudo evolucionar el dragón.' });
+                }
+            case 'battle':
+                const dragon = await characterModel.findCharacterById(dragonId);
+                if (dragon && dragon.availableForBattle) {
+                    return res.json({ message: 'Batalla iniciada', dragon });
+                } else {
+                    return res.status(400).json({ message: 'El dragón no está listo para la batalla' });
+                }
+            default:
+                return res.status(400).json({ message: 'Acción no reconocida' });
+        }
+    } catch (error) {
+        console.error('Error al actualizar los atributos del dragón:', error);
+        return res.status(500).json({ message: 'Error al actualizar los atributos del dragón', error });
     }
-
-    // Si el dragón no pudo ser actualizado por alguna razón
-    return res.status(400).json({ message: 'No se pudo realizar la acción' });
 };
 
 

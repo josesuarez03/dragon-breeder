@@ -15,11 +15,6 @@ exports.create = (req, res) => {
 
 exports.store = async (req, res) => {
 
-    if (!req.session.userId) {
-        // Si no hay sesión de usuario, redirigir al login
-        return res.redirect('/login');
-    }
-
     try {
         const newCharacter = {
             name: req.body.name,
@@ -36,14 +31,20 @@ exports.store = async (req, res) => {
             stage: req.body.stage,
             imageUrl: req.body.imageUrl,
             availableForBattle: false,
-            userId: req.session.userId
+            userId: req.session.userId,
+            type: 'dragon' // Asegúrate de que este campo exista en tu modelo
         };
 
-        await characterModel.saveDragon(newCharacter); // Guardar usando el modelo
+        const savedDragon = await characterModel.createDragon(newCharacter);
+
+        if (!savedDragon) {
+            throw new Error('No se pudo crear el dragón');
+        }
 
         res.redirect('/characters');
     } catch (error) {
-        res.status(500).send('Error al crear el personaje');
+        console.error('Error al crear el personaje:', error);
+        res.status(500).send('Error al crear el personaje: ' + error.message);
     }
 };
 
@@ -60,23 +61,42 @@ exports.update = async (req, res) => {
     try {
         const updatedCharacter = {
             ...req.body,
-            id: req.params.id
+            _id: req.params.id, // Usa _id en lugar de id para MongoDB
+            specialAbilities: req.body.specialAbilities === 'true',
+            hungry: parseFloat(req.body.hungry),
+            energy: parseFloat(req.body.energy),
+            health: parseFloat(req.body.health),
+            speed: parseFloat(req.body.speed),
+            agility: parseFloat(req.body.agility),
+            strength: parseFloat(req.body.strength),
+            intelligence: parseFloat(req.body.intelligence),
+            defense: parseFloat(req.body.defense),
+            attack: parseFloat(req.body.attack),
         };
 
-        await characterModel.saveDragon(updatedCharacter); // Guardar usando MongoDB
+        const savedDragon = await characterModel.saveDragon(updatedCharacter);
+
+        if (!savedDragon) {
+            throw new Error('No se pudo actualizar el dragón');
+        }
 
         res.redirect('/characters');
     } catch (error) {
-        res.status(500).send('Error al actualizar el personaje');
+        console.error('Error al actualizar el personaje:', error);
+        res.status(500).send('Error al actualizar el personaje: ' + error.message);
     }
 };
 
 exports.delete = async (req, res) => {
     try {
-        await characterModel.deleteDragon(req.params.id); // Implementar esta función en characterModel
+        const result = await characterModel.deleteDragon(req.params.id);
+        if (!result) {
+            throw new Error('No se pudo eliminar el dragón');
+        }
         res.redirect('/characters');
     } catch (error) {
-        res.status(500).send('Error al eliminar el personaje');
+        console.error('Error al eliminar el personaje:', error);
+        res.status(500).send('Error al eliminar el personaje: ' + error.message);
     }
 };
 
