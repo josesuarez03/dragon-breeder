@@ -82,12 +82,13 @@ exports.login = async (req, res) => {
         res.status(500).json({ message: 'Error al iniciar sesión', error });
     }
 };
+
 exports.logout = async (req, res) => {
-    const { username } = req.body;  // O puedes usar el `id` del usuario almacenado en la sesión
+    const { username } = req.body;
 
     try {
         const user = await findUserByUsername(username);
-        
+
         if (!user) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
@@ -95,20 +96,39 @@ exports.logout = async (req, res) => {
         // Actualizar el estado online del usuario
         await updateUser(user._id, { isOnline: false });
 
-        return res.status(200).json({ message: 'Cierre de sesión exitoso', user });
+        // Destruir la sesión del usuario
+        req.session.destroy((err) => {
+            if (err) {
+                return res.status(500).json({ message: 'Error al destruir la sesión', error: err });
+            }
+
+            res.clearCookie('connect.sid'); 
+
+            return res.status(200).json({ message: 'Cierre de sesión exitoso' });
+        });
 
     } catch (error) {
         res.status(500).json({ message: 'Error al cerrar sesión', error });
     }
 };
 
+// Método para mostrar los usuarios online
 exports.onlineUsers = async (req, res) => {
     try {
-        // Filtrar usuarios que están en línea
-        const onlineUsers = await usersModel.getOnlineUsers();
-        res.status(200).json(onlineUsers);
+        const onlineUsers = await User.find({ isOnline: true });
+        res.render('users/onlineUsers', { users: onlineUsers });
     } catch (error) {
         res.status(500).json({ message: 'Error al obtener los usuarios en línea', error });
+    }
+};
+
+// Método para mostrar el dashboard de administración
+exports.dashboardAdmin = async (req, res) => {
+    try {
+        const users = await usersModel.getAllUsers();
+        res.render('dashboardAdmin', { users });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener la lista de usuarios', error });
     }
 };
 
