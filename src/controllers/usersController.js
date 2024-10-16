@@ -1,4 +1,4 @@
-const { createUser, findUserByUsername, updateUser } = require('../models/usersModel');
+const { createUser, findUserByUsername, updateUser, getUserByEmail, getUserByUsername } = require('../models/usersModel');
 const {User} = require('../models/dbModel');
 
 // Método para mostrar y procesar el registro de usuarios
@@ -27,7 +27,14 @@ exports.register = async (req, res) => {
         }
 
         const newUser = await createUser({ username, password, email });
-        res.status(201).json({ message: 'Usuario registrado exitosamente', user: newUser });
+        
+        console.log('Usuario registrado exitosamente:', newUser.username);
+        
+        // Iniciar sesión automáticamente después del registro
+        req.session.userId = newUser._id;
+        req.session.userRole = newUser.role;
+        
+        return res.redirect('/game');
     } catch (error) {
         console.error("Error al crear el usuario:", error);
         res.status(500).json({ message: 'Error al registrar el usuario', error });

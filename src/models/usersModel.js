@@ -102,7 +102,26 @@ const updateUser = async (userId, updateData) => {
     }
 };
 
-// Mantenemos la función createUser sin cambios si ya maneja el hashing de contraseñas correctamente
+// Función para obtener un usuario por nombre de usuario
+const getUserByUsername = async (username) => {
+    try {
+        return await User.findOne({ username });
+    } catch (error) {
+        console.error('Error al buscar usuario por nombre de usuario:', error);
+        throw error;
+    }
+};
+
+// Función para obtener un usuario por correo electrónico
+const getUserByEmail = async (email) => {
+    try {
+        return await User.findOne({ email });
+    } catch (error) {
+        console.error('Error al buscar usuario por correo electrónico:', error);
+        throw error;
+    }
+};
+
 
 // Exportar las funciones
 module.exports = {
@@ -115,4 +134,6 @@ module.exports = {
     initUserCollection,
     findUserByUsername,  // Nueva exportación
     updateUser,          // Nueva exportación
+    getUserByEmail,
+    getUserByUsername
 };
