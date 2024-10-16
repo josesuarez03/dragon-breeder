@@ -43,6 +43,7 @@ app.set('layout', 'index');
 
 // Configuración de la carpeta estática
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/services', express.static(path.join(__dirname, 'services')));
 
 // Configuración de las rutas
 app.use('/', gameRoutes);
