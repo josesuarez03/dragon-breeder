@@ -42,7 +42,6 @@ exports.login = async (req, res) => {
 
     const { username, password } = req.body;
 
-    
     try {
         // Buscar el usuario por nombre de usuario
         const user = await User.findOne({ username });
@@ -61,53 +60,56 @@ exports.login = async (req, res) => {
         // Si el login es exitoso, actualizamos el estado `isOnline` del usuario
         await updateUser(user._id, { isOnline: true });
 
+        // Establecer la sesión del usuario
+        req.session.userId = user._id;
+        req.session.userRole = user.role;
+
         // Verificar el rol del usuario
-        const userRole = user.role ? 'true' : 'false';
-
-
-        // Aquí puedes agregar lógica adicional basada en el rol si es necesario
-        if (userRole === 'true') {
-            responseData.adminMessage = 'Bienvenido, administrador';
-            // Podrías agregar más datos o permisos específicos para administradores
-        }
-        
-
-        if (userRole === 'true') {
-            return res.redirect('/admin/dashboard'); // Redirigir a un panel de administrador
+        if (user.role === true) {
+            req.session.isAdmin = true;
+            res.redirect('/admin/dashboard'); // Redirigir a un panel de administrador
         } else {
-            return res.redirect('/game'); // Redirigir al juego si es un usuario normal
+            req.session.isAdmin = false;
+            res.redirect('/game'); // Redirigir al juego si es un usuario normal
         }
     } catch (error) {
+        console.error('Error en el inicio de sesión:', error);
         res.status(500).json({ message: 'Error al iniciar sesión', error });
     }
 };
 
 exports.logout = async (req, res) => {
-    const { username } = req.body;
-
     try {
-        const user = await findUserByUsername(username);
+        if (req.session) {
+            const userId = req.session.userId;
 
-        if (!user) {
-            return res.status(404).json({ message: 'Usuario no encontrado' });
+            // Destruir la sesión
+            req.session.destroy(async (err) => {
+                if (err) {
+                    console.error('Error al destruir la sesión:', err);
+                    return res.status(500).json({ message: 'Error al cerrar sesión', error: err });
+                }
+
+                res.clearCookie('connect.sid');
+
+                // Si tenemos el userId, actualizamos el estado online del usuario
+                if (userId) {
+                    try {
+                        await updateUser(userId, { isOnline: false });
+                    } catch (updateError) {
+                        console.error('Error al actualizar el estado online del usuario:', updateError);
+                    }
+                }
+
+                // Redirigir a la página de inicio o login
+                res.redirect('/');
+            });
+        } else {
+            // Si no hay sesión, simplemente redirigimos
+            res.redirect('/login');
         }
-
-        // Actualizar el estado online del usuario
-        await updateUser(user._id, { isOnline: false });
-
-        // Destruir la sesión del usuario
-        req.session.destroy((err) => {
-            if (err) {
-                return res.status(500).json({ message: 'Error al destruir la sesión', error: err });
-            }
-
-            res.clearCookie('connect.sid'); 
-
-            res.redirect('/');
-            return res.status(200).json({ message: 'Cierre de sesión exitoso' });
-        });
-
     } catch (error) {
+        console.error('Error en el proceso de cierre de sesión:', error);
         res.status(500).json({ message: 'Error al cerrar sesión', error });
     }
 };

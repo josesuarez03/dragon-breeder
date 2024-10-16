@@ -42,8 +42,11 @@ router.route('/login')
 
 router.route('/register')
     .get(userController.register)   // Renderiza el formulario de registro
-    .post(userController.register); // Procesa el registro      
-router.post('/logout', userController.logout);       
+    .post(userController.register); // Procesa el registro  
+        
+router.route('/logout')
+    .get(userController.logout)
+    .post(userController.logout);     
 
 // Rutas para editar y eliminar usuarios
 router.post('/users/:id/edit', isAuthenticated, userController.edit);    //agregar authMiddleware
