@@ -48,7 +48,13 @@ router.post('/logout', userController.logout);
 router.post('/users/:id/edit',  userController.edit);    //agregar authMiddleware
 router.post('/users/:id/delete',  userController.delete); //agregar authMiddleware
 
-// Ruta para listar usuarios en línea
-router.get('/users/online',  userController.onlineUsers); //agregar authMiddleware
+// Ruta para listar usuarios online
+router.get('/online-users', userController.onlineUsers); //agregar authMiddleware
+
+// Ruta para el dashboard de administración (listar, editar, eliminar usuarios)
+router.get('/admin/dashboard', userController.dashboardAdmin);
+router.post('/admin/users/:id/edit', userController.edit);   // Editar usuario
+router.post('/admin/users/:id/delete', userController.delete); // Eliminar usuario
+
 
 module.exports = router;
