@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios Online</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Usuarios Online</h1>
+        <ul class="list-group">
+            <% if (users.length === 0) { %>
+                <li class="list-group-item">No hay usuarios en línea.</li>
+            <% } else { %>
+                <% users.forEach(function(user) { %>
+                    <li class="list-group-item">
+                        <%= user.username %> - <%= user.email %>
+                    </li>
+                <% }); %>
+            <% } %>
+        </ul>
+    </div>
+</body>
+</html>
