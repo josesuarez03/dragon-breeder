@@ -2,13 +2,15 @@ const express = require('express');
 const router = express.Router();
 const gameController = require('../controllers/gameController');
 const characterController = require('../controllers/characterController')
-const {isAdmin, isAuthenticated} = require('../middleware/authMiddleware');
+const {isAdmin, isAuthenticated, checkSession} = require('../middleware/authMiddleware');
 const userController = require('../controllers/usersController');
 
-// Ruta principal del juego
-router.get('/', gameController.view);
-// Rutas del juego 
-router.get('/game', isAuthenticated, gameController.view);
+// Ruta principal - página de inicio
+router.get('/', gameController.startGame);
+
+router.use('/game', checkSession);
+
+router.get('/game', isAuthenticated, gameController.index);
 router.get('/game/select', isAuthenticated, gameController.select);
 router.post('/game/select', isAuthenticated, gameController.chooseCharacter);
 
