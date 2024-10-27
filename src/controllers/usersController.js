@@ -135,7 +135,7 @@ exports.onlineUsers = async (req, res) => {
 exports.dashboardAdmin = async (req, res) => {
     try {
         const users = await usersModel.getAllUsers();
-        res.render('dashboardAdmin', { users });
+        res.render('users/dashboardAdmin', { users });
     } catch (error) {
         res.status(500).json({ message: 'Error al obtener la lista de usuarios', error });
     }
