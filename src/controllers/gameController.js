@@ -1,13 +1,7 @@
 const characterModel = require('../models/characterModel');
 const gameModel = require('../models/gameModel');
-const usersModel = require('../models/usersModel');
+const { findUserById } = require('../models/usersModel');
 const mongoose = require('mongoose')
-
-const initializeCollections = async () => {
-    await gameModel.initGameStateCollection();
-    await characterModel.initDragonCollection();
-    await usersModel.initUserCollection();
-};
 
 
 exports.select = async (req, res) => {
@@ -39,14 +33,55 @@ exports.chooseCharacter = async (req, res) => {
     }
 };
 
+exports.startGame = async (req, res) => {
+    try {
+        if (!req.session.userId) {
+            return res.render('startGame', { 
+                isAuthenticated: false, 
+                hasCharacter: false,
+                layout: false 
+            });
+        }
 
+        // Verificar si el usuario tiene un estado de juego
+        const gameState = await gameModel.getGameState(req.session.userId);
+        const hasCharacter = gameState && gameState.characterId;
+
+        res.render('startGame', {
+            isAuthenticated: true,
+            hasCharacter: !!hasCharacter,
+            layout: false
+        });
+    } catch (error) {
+        console.error('Error al cargar la página de inicio:', error);
+        res.status(500).send('Error al cargar la página de inicio');
+    }
+};
+
+// Actualizar el método view para manejar mejor las redirecciones
 exports.view = async (req, res) => {
     try {
+        if (!req.session.userId) {
+            return res.redirect('/');
+        }
+
         const userId = req.session.userId;
         const gameState = await gameModel.getGameState(userId);
-        const character = await characterModel.findCharacterById(gameState.characterId);
 
-        res.render('game', { gameState, character });
+        if (!gameState || !gameState.characterId) {
+            return res.redirect('/box-eggs');
+        }
+
+        const character = await characterModel.findCharacterById(gameState.characterId);
+        if (!character) {
+            return res.redirect('/box-eggs');
+        }
+
+        res.render('game', { 
+            gameState, 
+            character,
+            isAuthenticated: true
+        });
     } catch (error) {
         console.error('Error al cargar el juego:', error);
         res.status(500).send('Error al cargar el juego');
@@ -58,19 +93,30 @@ exports.index = async (req, res) => {
         return res.redirect('/login');
     }
     try {
-        const user = await usersModel.getUserById(req.session.userId);
+        const user = await findUserById(req.session.userId);
         const gameState = await gameModel.getGameState(req.session.userId);
-        const dragons = await characterModel.getAllDragons(req.session.userId);
+        const dragons = await characterModel.getAllCharacters(req.session.userId);
 
         if (dragons.length === 0) {
             return res.redirect('/box-eggs');
+        }
+        // Obtener el personaje activo del gameState
+        let character = null;
+        if (gameState && gameState.characterId) {
+            character = await characterModel.findCharacterById(gameState.characterId);
+        } else if (dragons.length > 0) {
+            // Si no hay personaje activo pero hay dragones, usar el primero
+            character = dragons[0];
+            // Actualizar el gameState con este dragón
+            await gameModel.updateGameState(req.session.userId, { characterId: character._id });
         }
 
         res.render('game', {
             title: 'Dragon Breeder Game',
             user,
             gameState,
-            dragons
+            dragons,
+            character // Añadimos el character a la vista
         });
     } catch (error) {
         console.error('Error loading game:', error);
