@@ -1,0 +1,22 @@
+<div class="container">
+    <h1>Dragon Breeder</h1>
+    
+    <% if (isAuthenticated) { %>
+        <div class="status">
+            <h2>¡Bienvenido de vuelta!</h2>
+            <p class="welcome-text">Tu aventura con los dragones continúa...</p>
+            <% if (hasCharacter) { %>
+                <a href="/game" class="button primary">Continuar Jugando</a>
+            <% } else { %>
+                <a href="/box-eggs" class="button primary">Obtener tu Primer Dragón</a>
+            <% } %>
+            <a href="/logout" class="button secondary">Cerrar Sesión</a>
+        </div>
+    <% } else { %>
+        <div class="status">
+            <p class="welcome-text">Inicia sesión o regístrate para comenzar tu aventura con dragones</p>
+            <a href="/login" class="button primary">Iniciar Sesión</a>
+            <a href="/register" class="button secondary">Registrarse</a>
+        </div>
+    <% } %>
+</div>
