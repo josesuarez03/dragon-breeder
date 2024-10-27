@@ -27,11 +27,16 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 60000
+    maxAge: 1000 * 60 * 60 * 24 // 24 horas
   },
   store: MongoStore.create({
     mongoUrl: mongoURL,
-    collectionName: 'sessions'
+    collectionName: 'sessions',
+    ttl: 60 * 60 * 24, // 24 horas
+    autoRemove: 'native',
+    crypto: {
+      secret: process.env.SESSION_SECRET || 'tu_secreto_aqui'
+    }
   })
 }));
 
@@ -58,7 +63,6 @@ app.set('layout', 'index');
 
 // Configuración de la carpeta estática
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/services', express.static(path.join(__dirname, 'services')));
 
 // Configuración de las rutas
 app.use('/', gameRoutes);

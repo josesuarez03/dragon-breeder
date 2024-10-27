@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Usuarios Online</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
+    <style>
+        #userMap {
+            display: none;
+            margin-top: 20px;
+        }
+        .time-controls {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -20,6 +34,60 @@
                 <% }); %>
             <% } %>
         </ul>
+
+        <button id="toggleMap" class="btn btn-primary mt-3">Mostrar mapa de usuarios</button>
+
+        <div id="userMap">
+            <div class="time-controls">
+                <div class="form-group">
+                    <label for="timeMode">Modo de tiempo:</label>
+                    <select class="form-control" id="timeMode">
+                        <option value="system">Hora del sistema</option>
+                        <option value="day">Modo día</option>
+                        <option value="night">Modo noche</option>
+                    </select>
+                </div>
+            </div>
+            <div id="canvasContainer"></div>
+        </div>
     </div>
+
+    <script>
+        // Recuperar preferencias guardadas
+        const savedTimeMode = localStorage.getItem('timeMode') || 'system';
+        document.getElementById('timeMode').value = savedTimeMode;
+
+        // Referencias a elementos
+        const toggleButton = document.getElementById('toggleMap');
+        const userMap = document.getElementById('userMap');
+        const timeModeSelect = document.getElementById('timeMode');
+        let sketchLoaded = false;
+
+        // Evento para cambio de modo de tiempo
+        timeModeSelect.addEventListener('change', function(e) {
+            const selectedMode = e.target.value;
+            localStorage.setItem('timeMode', selectedMode);
+            if (window.updateTimeMode) {
+                window.updateTimeMode(selectedMode);
+            }
+        });
+
+        // Evento para mostrar/ocultar el mapa
+        toggleButton.addEventListener('click', function() {
+            if (userMap.style.display === 'none' || userMap.style.display === '') {
+                userMap.style.display = 'block';
+                toggleButton.textContent = 'Ocultar mapa de usuarios';
+                
+                if (!sketchLoaded) {
+                    loadP5Sketch();
+                    sketchLoaded = true;
+                }
+            } else {
+                userMap.style.display = 'none';
+                toggleButton.textContent = 'Mostrar mapa de usuarios';
+            }
+        });
+    </script>
+    <script src="js/sketch.js"></script>
 </body>
 </html>
