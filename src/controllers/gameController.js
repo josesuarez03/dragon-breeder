@@ -1,7 +1,8 @@
 const characterModel = require('../models/characterModel');
 const gameModel = require('../models/gameModel');
 const { findUserById } = require('../models/usersModel');
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const usersModel = require('../models/usersModel');
 
 
 exports.select = async (req, res) => {
