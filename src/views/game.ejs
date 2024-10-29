@@ -41,32 +41,58 @@
     </div>
 </div>
 
-<script type="module">
-    import { feedDragon, healDragon, startBattle, trainDragon, evolveDragon } from '/services/apiRest.js';
+<script>
+    async function handleAction(dragonId, action) {
+        try {
+            const response = await fetch(`/dragon/${dragonId}/action`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ action })
+            });
 
-    // Exponer las funciones al ámbito global (window)
-    window.handleFeedDragon = async function(dragonId) {
-        await feedDragon(dragonId);
-        location.reload();
+            const data = await response.json();
+            
+            if (data.success) {
+                // Actualizar los valores en la interfaz
+                updateDragonStats(data.dragon);
+            } else {
+                console.error('Error:', data.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
     }
 
-    window.handleHealDragon = async function(dragonId) {
-        await healDragon(dragonId);
-        location.reload();
+    function updateDragonStats(dragon) {
+        // Actualizar valores en la interfaz
+        document.querySelector('.energyLevel').textContent = `${dragon.energy} ⚡`;
+        document.querySelector('.healthLevel').textContent = `${dragon.health} ❤️`;
+        
+        // Actualizar estado de batalla
+        const battleStatus = dragon.availableForBattle ? 'Disponible para luchar' : 'No disponible para luchar';
+        document.querySelector('.availableBattle').textContent = battleStatus;
+        
+        // Actualizar estado de los botones
+        document.querySelector('.btn-battle').disabled = !dragon.availableForBattle;
+        document.querySelector('.btn-evolve').disabled = dragon.stage === 'adult';
     }
 
-    window.handleStartBattle = async function(dragonId) {
-        await startBattle(dragonId);
-        location.reload();
+    // Reemplazar las funciones handle existentes
+    async function handleFeedDragon(dragonId) {
+        await handleAction(dragonId, 'feed');
     }
 
-    window.handleTrainDragon = async function(dragonId) {
-        await trainDragon(dragonId);
-        location.reload();
+    async function handleHealDragon(dragonId) {
+        await handleAction(dragonId, 'heal');
     }
 
-    window.handleEvolveDragon = async function(dragonId) {
-        await evolveDragon(dragonId);
-        location.reload();
+    async function handleTrainDragon(dragonId) {
+        await handleAction(dragonId, 'train');
+    }
+
+    async function handleEvolveDragon(dragonId) {
+        await handleAction(dragonId, 'evolve');
     }
 </script>

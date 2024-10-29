@@ -15,25 +15,6 @@ exports.select = async (req, res) => {
 };
 
 
-exports.chooseCharacter = async (req, res) => {
-    try {
-        const dragonId = req.body.characterId;
-        const userId = req.session.userId;
-
-        // Actualizar el gameState con el nuevo characterId
-        await gameModel.updateGameState(userId, { characterId: dragonId });
-
-        // Obtener el dragón seleccionado
-        const selectedDragon = await characterModel.findCharacterById(dragonId);
-
-        // Redirigir a la página del juego con el dragón seleccionado
-        res.redirect('/game');
-    } catch (error) {
-        console.error('Error al seleccionar el dragón:', error);
-        res.status(500).send('Error al seleccionar el dragón');
-    }
-};
-
 exports.startGame = async (req, res) => {
     try {
         if (!req.session.userId) {
@@ -208,57 +189,81 @@ exports.breed = async (req, res) => {
     }
 };
 
-exports.regenerateAttributes = async (req, res) => {
+// gameController.js - Actualizar el método chooseCharacter
+exports.chooseCharacter = async (req, res) => {
     try {
-        
-        const dragonId = new mongoose.Types.ObjectId(req.params.id);
-        const action = req.body.action;
+        const dragonId = req.body.characterId;
+        const userId = req.session.userId;
 
-        let updatedDragon;
+        // Actualizar el gameState con el nuevo characterId
+        await gameModel.updateGameState(userId, { characterId: dragonId });
 
-        switch (action) {
-            case 'feed':
-                updatedDragon = await characterModel.regenerateDragonAttributes(dragonId, 'feed');
-                if (updatedDragon) {
-                    return res.json({ message: 'Dragón alimentado', dragon: updatedDragon });
-                }
-                break;
-            case 'heal':
-                updatedDragon = await characterModel.regenerateDragonAttributes(dragonId, 'heal');
-                if (updatedDragon) {
-                    return res.json({ message: 'Dragón curado', dragon: updatedDragon });
-                }
-                break;
-            case 'train':
-                const dragonToTrain = await characterModel.findCharacterById(dragonId); 
-                if (dragonToTrain) {
-                    await characterModel.trainDragon(dragonToTrain); 
-                    return res.json({ message: 'Dragón entrenado', dragon: dragonToTrain });
-                }
-                break;
-            case 'evolve':
-                const evolvedDragon = await characterModel.evolveDragon(dragonId);
-                if (evolvedDragon) {
-                    return res.json({ message: 'Dragón evolucionado', dragon: evolvedDragon });
-                } else {
-                    return res.status(400).json({ message: 'No se pudo evolucionar el dragón.' });
-                }
-            case 'battle':
-                const dragon = await characterModel.findCharacterById(dragonId);
-                if (dragon && dragon.availableForBattle) {
-                    return res.json({ message: 'Batalla iniciada', dragon });
-                } else {
-                    return res.status(400).json({ message: 'El dragón no está listo para la batalla' });
-                }
-            default:
-                return res.status(400).json({ message: 'Acción no reconocida' });
-        }
+        // Redireccionar a la página del juego
+        res.redirect('/game');
     } catch (error) {
-        console.error('Error al actualizar los atributos del dragón:', error);
-        return res.status(500).json({ message: 'Error al actualizar los atributos del dragón', error });
+        console.error('Error al seleccionar el dragón:', error);
+        res.status(500).send('Error al seleccionar el dragón');
     }
 };
 
+// gameController.js - Actualizar el método regenerateAttributes
+exports.regenerateAttributes = async (req, res) => {
+    try {
+        const dragonId = req.params.id;
+        const action = req.body.action;
+        
+        // Buscar el dragón actual
+        const dragon = await characterModel.findCharacterById(dragonId);
+        
+        if (!dragon) {
+            return res.status(404).json({ message: 'Dragón no encontrado' });
+        }
+
+        let updatedDragon;
+        switch (action) {
+            case 'feed':
+                dragon.hungry = Math.min((dragon.hungry || 0) + 30, 100);
+                dragon.energy = Math.min((dragon.energy || 0) + 20, 100);
+                updatedDragon = await dragon.save();
+                break;
+            case 'heal':
+                dragon.health = Math.min((dragon.health || 0) + 50, 100);
+                updatedDragon = await dragon.save();
+                break;
+            case 'train':
+                updatedDragon = await characterModel.trainDragon(dragon);
+                break;
+            case 'evolve':
+                updatedDragon = await characterModel.evolveDragon(dragonId);
+                if (!updatedDragon) {
+                    return res.status(400).json({ message: 'No se pudo evolucionar el dragón' });
+                }
+                break;
+            default:
+                return res.status(400).json({ message: 'Acción no reconocida' });
+        }
+
+        // Verificar disponibilidad para batalla
+        updatedDragon.availableForBattle = 
+            (updatedDragon.hungry >= 80 && 
+             updatedDragon.energy >= 80 && 
+             updatedDragon.health >= 80);
+        
+        await updatedDragon.save();
+        
+        return res.json({ 
+            success: true, 
+            message: 'Atributos actualizados',
+            dragon: updatedDragon
+        });
+    } catch (error) {
+        console.error('Error al actualizar los atributos:', error);
+        return res.status(500).json({ 
+            success: false, 
+            message: 'Error al actualizar los atributos' 
+        });
+    }
+};
 
 exports.openMysteryBox = async (req, res) => {
     try {
