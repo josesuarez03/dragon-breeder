@@ -1,59 +1,122 @@
-body{
-    background-color: #1b1f2a; /* Un tono oscuro para el fondo */
-    color: #e0e0e0; /* Color claro para el texto que contraste bien con el fondo */
-    font-family: 'MedievalSharp', serif; /* Fuente temática */
+body {
+    background-color: #1b1f2a;
+    color: #e0e0e0;
+    font-family: 'MedievalSharp', serif;
     height: 100vh;
 }
 
-header{
+header {
     padding: 30px;
-    
 }
 
-
-span{
-    font-size: 1.8em;
-}
-
-/* Personalizando la Navbar para que tenga una estética más épica */
+/* Ajustes para el navbar y sus elementos */
 .navbar {
-    background-color: #2c3e50; /* Un fondo oscuro con un tono medieval */
-    border-bottom: 2px solid #e74c3c; /* Una línea roja en la parte inferior para darle un toque dramático */
+    background-color: #2c3e50;
+    border-bottom: 2px solid #e74c3c;
+    min-height: 70px;
+}
+
+span.title {
+    font-size: 1.8em;
+    line-height: 1;
+    margin: 0;
+    display: flex;
+    align-items: center;
 }
 
 .navbar-toggler {
-    border: none; /* Remover el borde predeterminado */
-    color: #f1c40f; /* Dorado para resaltar el ícono del menú móvil */
+    border: none;
+    color: #f1c40f;
+    padding: 0.25rem 0.75rem;
+    margin: 0;
 }
 
 .navbar-toggler .bi-list {
-    color: #ecf0f1; /* Cambia a negro o cualquier color que prefieras */
+    color: #ecf0f1;
 }
 
+.navbar-nav {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.navbar-nav .nav-item {
+    display: flex;
+    align-items: center;
+}
 
 .navbar-nav .nav-item .nav-link {
-    color: #ecf0f1; /* Color blanco claro para los enlaces */
-    font-size: 1.2em; /* Aumenta el tamaño del texto para una sensación más dramática */
-    padding: 10px;
+    color: #ecf0f1;
+    font-size: 1.2em;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
 }
 
 .navbar-nav .nav-item .nav-link:hover {
-    color: #f39c12; /* Cambia el color a dorado al hacer hover */
+    color: #f39c12;
 }
 
 .navbar-nav .nav-item .nav-link.active {
-    color: #f39c12; /* Mantén el enlace activo en dorado */
+    color: #f39c12;
 }
 
+/* Estilos para el dropdown de usuario */
+.user-dropdown {
+    display: flex;
+    align-items: center;
+}
+
+.user-dropdown .bi-person-circle {
+    font-size: 1.5em;
+    color: #ecf0f1;
+    transition: all 0.3s ease; /* Añadimos transición suave */
+}
+
+/* Nuevo efecto hover para el icono de usuario */
+.user-dropdown .nav-link:hover .bi-person-circle {
+    color: #f39c12; /* Color dorado al hacer hover */
+    transform: scale(1.1); /* Ligero efecto de escala */
+    text-shadow: 0 0 10px rgba(243, 156, 18, 0.5); /* Efecto de brillo */
+}
+
+.user-dropdown .dropdown-toggle::after {
+    display: none;
+}
+
+.user-dropdown .dropdown-menu {
+    background-color: #2c3e50;
+    border: 1px solid #e74c3c;
+    margin-top: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    min-width: 200px;
+}
+
+.user-dropdown .dropdown-item {
+    color: #ecf0f1;
+    font-family: 'MedievalSharp', serif;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+}
+
+.user-dropdown .dropdown-item:hover {
+    background-color: #34495e;
+    color: #f39c12;
+}
+
+.user-dropdown .dropdown-divider {
+    border-top: 1px solid #e74c3c;
+    margin: 0.5rem 0;
+}
 
 #sticky-footer {
-    background-color: #2c3e50; /* Color oscuro */
-    border-top: 2px solid #e74c3c; /* Añade una línea roja en la parte superior para consistencia */
+    background-color: #2c3e50;
+    border-top: 2px solid #e74c3c;
 }
 
 #sticky-footer .container-footer {
-    color: #f1c40f; /* Texto dorado */
-    
+    color: #f1c40f;
 }
 
 #sticky-footer small {

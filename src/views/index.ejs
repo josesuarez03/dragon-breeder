@@ -19,7 +19,7 @@
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-transparent">
-            <span>Dragon Breeder</span>
+            <span class="title">Dragon Breeder</span>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="bi bi-list"></i>
             </button>
@@ -27,7 +27,7 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a href="/" class="nav-link">Inicio</a>
+                        <a href="/game" class="nav-link">Inicio</a>
                     </li>
                     <li class="nav-item">
                         <a href="/swap-dragon" class="nav-link">Cambiar Dragones</a>
@@ -41,9 +41,6 @@
                     <li class="nav-item">
                         <a href="/characters/:id/battle" class="nav-link">Luchar</a>
                     </li>
-                    <li class="nav-item">
-                        <a href="/online-users" class="nav-link">Usuarios Online</a>
-                    </li>
                     <li class="nav-item dropdown user-dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="bi bi-person-circle"></i>
@@ -51,6 +48,8 @@
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
                             <% if (isAuthenticated) { %>
                                 <a class="dropdown-item" href="/profile">Mi Cuenta</a>
+                                <div class="dropdown-divider"></div>
+                                <a href="/online-users" class="dropdown-item">Usuarios Online</a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="/logout">Cerrar Sesión</a>
                             <% } else { %>
