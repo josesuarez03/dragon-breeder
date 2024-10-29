@@ -1,22 +1,43 @@
-<div class="container">
-    <h1>Dragon Breeder</h1>
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dragon Breeder</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> 
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="css/index.css">
+        <link rel="stylesheet" href="css/game.css">
+        <link rel="stylesheet" href="css/box-eggs.css">
+        <link rel="stylesheet" href="css/characters.css">
+        <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     
-    <% if (isAuthenticated) { %>
-        <div class="status">
-            <h2>¡Bienvenido de vuelta!</h2>
-            <p class="welcome-text">Tu aventura con los dragones continúa...</p>
-            <% if (hasCharacter) { %>
-                <a href="/game" class="button primary">Continuar Jugando</a>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Dragon Breeder</h1>
+            
+            <% if (isAuthenticated) { %>
+                <div class="status">
+                    <h2>¡Bienvenido de vuelta!</h2>
+                    <p class="welcome-text">Tu aventura con los dragones continúa...</p>
+                    <% if (hasCharacter) { %>
+                        <a href="/game" class="button primary">Continuar Jugando</a>
+                    <% } else { %>
+                        <a href="/box-eggs" class="button primary">Obtener tu Primer Dragón</a>
+                    <% } %>
+                    <a href="/logout" class="button secondary">Cerrar Sesión</a>
+                </div>
             <% } else { %>
-                <a href="/box-eggs" class="button primary">Obtener tu Primer Dragón</a>
+                <div class="status">
+                    <p class="welcome-text">Inicia sesión o regístrate para comenzar tu aventura con dragones</p>
+                    <a href="/login" class="button primary">Iniciar Sesión</a>
+                    <a href="/register" class="button secondary">Registrarse</a>
+                </div>
             <% } %>
-            <a href="/logout" class="button secondary">Cerrar Sesión</a>
         </div>
-    <% } else { %>
-        <div class="status">
-            <p class="welcome-text">Inicia sesión o regístrate para comenzar tu aventura con dragones</p>
-            <a href="/login" class="button primary">Iniciar Sesión</a>
-            <a href="/register" class="button secondary">Registrarse</a>
-        </div>
-    <% } %>
-</div>
+    </body>
+</html>
