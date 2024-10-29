@@ -7,36 +7,29 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
-    <style>
-        #userMap {
-            display: none;
-            margin-top: 20px;
-        }
-        .time-controls {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/online-users.css">
+    <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
     <div class="container">
-        <h1>Usuarios Online</h1>
-        <ul class="list-group">
-            <% if (users.length === 0) { %>
-                <li class="list-group-item">No hay usuarios en línea.</li>
-            <% } else { %>
-                <% users.forEach(function(user) { %>
-                    <li class="list-group-item">
-                        <%= user.username %> - <%= user.email %>
-                    </li>
-                <% }); %>
-            <% } %>
-        </ul>
+        <div class="container-group">
+            <h1>Usuarios Online</h1>
+            <ul class="list-group">
+                <% if (users.length === 0) { %>
+                    <li class="list-group-item">No hay usuarios en línea.</li>
+                <% } else { %>
+                    <% users.forEach(function(user) { %>
+                        <li class="list-group-item">
+                            <%= user.username %> - <%= user.email %>
+                        </li>
+                    <% }); %>
+                <% } %>
+            </ul>
+    
+        </div>
 
         <button id="toggleMap" class="btn btn-primary mt-3">Mostrar mapa de usuarios</button>
-
+    
         <div id="userMap">
             <div class="time-controls">
                 <div class="form-group">
@@ -50,8 +43,8 @@
             </div>
             <div id="canvasContainer"></div>
         </div>
+    
     </div>
-
     <script>
         // Recuperar preferencias guardadas
         const savedTimeMode = localStorage.getItem('timeMode') || 'system';
