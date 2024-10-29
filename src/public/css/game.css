@@ -56,6 +56,7 @@
     color: #f1c40f; /* Amarillo dorado */
     font-style: italic;
     margin-bottom: 10px;
+    align-items: center;
 }
 
 /* Ajuste de la tabla de atributos */
@@ -85,10 +86,12 @@
 /* Estilos específicos para niveles */
 .energyLevel {
     color: #f39c12; /* Dorado para el nivel de energía ⚡ */
+    font-size: 1.2em;
 }
 
 .healthLevel {
     color: #e74c3c; /* Rojo para el nivel de salud ❤️ */
+    font-size: 1.2em;
 }
 
 .availableBattle {
