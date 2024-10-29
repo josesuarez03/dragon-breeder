@@ -4,7 +4,7 @@ const {User} = require('../models/dbModel');
 // Método para mostrar y procesar el registro de usuarios
 exports.register = async (req, res) => {
     if (req.method === 'GET') {
-        return res.render('register');  // Renderiza la vista de registro si es una solicitud GET
+        return res.render('register', {layout: false});  // Renderiza la vista de registro si es una solicitud GET
     }
 
     const { username, password, email } = req.body;
@@ -44,7 +44,7 @@ exports.register = async (req, res) => {
 // Método para mostrar y procesar el login de usuarios
 exports.login = async (req, res) => {
     if (req.method === 'GET') {
-        return res.render('login');  // Renderiza la vista de login si es una solicitud GET
+        return res.render('login', {layout: false});  // Renderiza la vista de login si es una solicitud GET
     }
 
     const { username, password } = req.body;
