@@ -8,8 +8,6 @@
     background-size: cover; /* Imagen de fondo que cubre todo */
     padding: 20px;
     border-radius: 15px; /* Suavizar bordes del contenedor */
-    overflow: hidden; /* Asegura que el contenido no se desborde */
-    height: 100dvh;
 }
 
 /* Ajuste para la tarjeta de personaje (dragón) */
