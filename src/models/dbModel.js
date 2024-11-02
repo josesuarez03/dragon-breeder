@@ -46,7 +46,12 @@ const usersCollection = new  mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
     dragons: [dragonCollection], // Array de dragones del usuario
     gameState: [gameStateCollection], // Estado del juego del usuario
-    isOnline: {type: Boolean, default: false}
+    isOnline: {type: Boolean, default: false},
+    position : {
+        x: { type: Number, default: 400 }, // Posición inicial x
+        y: { type: Number, default: 400 }, // Posición inicial y
+        lastUpdate: { type: Date, default: Date.now }
+    }
 });
 
 // Middleware para hashear la contraseña antes de guardar el usuario
@@ -70,6 +75,15 @@ usersCollection.pre('save', async function (next) {
 usersCollection.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
+
+usersCollection.methods.updatePosition = async function(x, y) {
+    this.position.x = Math.min(Math.max(x, 0), 800);
+    this.position.y = Math.min(Math.max(y, 0), 800);
+    this.position.lastUpdate = new Date();
+    return await this.save();
+};
+
+usersCollection.index({ 'position.x': 1, 'position.y': 1 });
 
 const Dragon = mongoose.model('Dragon', dragonCollection);
 const GameState = mongoose.model('GameState', gameStateCollection);
