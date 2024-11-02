@@ -62,19 +62,20 @@ function determineCurrentMap() {
 }
 
 function handleMovement() {
-    if (keyIsDown(LEFT_ARROW) && playerX > 0) {
+    if (keyIsDown(65) && playerX > 0) { 
         playerX -= PLAYER_SPEED;
     }
-    if (keyIsDown(RIGHT_ARROW) && playerX < width - 50) {
+    if (keyIsDown(68) && playerX < width - 50) { 
         playerX += PLAYER_SPEED;
     }
-    if (keyIsDown(UP_ARROW) && playerY > 0) {
+    if (keyIsDown(87) && playerY > 0) { 
         playerY -= PLAYER_SPEED;
     }
-    if (keyIsDown(DOWN_ARROW) && playerY < height - 50) {
+    if (keyIsDown(83) && playerY < height - 50) { 
         playerY += PLAYER_SPEED;
     }
 }
+
 
 async function loadCharacters() {
     try {
