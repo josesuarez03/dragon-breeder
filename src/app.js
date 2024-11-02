@@ -8,13 +8,18 @@ const gameRoutes = require('../src/routes/gameRoutes');
 const characterModel = require('./models/characterModel');
 const {connectDB, mongoURL} = require('./config/database');
 const gameModel = require('./models/gameModel');
-const usersModel = require('./models/usersModel');
+const { initializeUserPositions, getOnlineUsersWithPositions } = require('./models/usersModel');
 const MongoStore = require('connect-mongo');
 const passport = require('./config/passportConfig');
 const User = require('./models/usersModel');
 const { addAuthToLocals } = require('./middleware/authMiddleware');
+const http = require('http');
+const { Server } = require('socket.io');
+const socketController = require('./controllers/socketController');
 
 const app = express();
+const server = http.createServer(app); // Crear servidor HTTP para socket.io
+const io = new Server(server); // Crear instancia de Socket.io
 
 app.use(logger('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -70,7 +75,7 @@ app.use('/', gameRoutes);
 app.post('/game/select', (req, res) => {
     const characterId = req.body.characterId;
     req.session.selectedCharacter = characterId;
-    res.redirect('/');
+    res.redirect('/game');
 });
 
 // Manejar errores 404 (página no encontrada) - Colocado después de las rutas
@@ -78,11 +83,7 @@ app.use((req, res, next) => {
     res.status(404).sendFile(path.join(__dirname, 'public/html', '404.html'));
 });
 
-// Función para decrementar atributos de dragones
-const decrementDragonAttributes = () => {
-    characterModel.decrementDragonAttributes()
-        .catch(err => console.error('Error decrementing dragon attributes:', err));
-};
+socketController.onConnection(io);
 
 const initializeCollections = async () => {
   await gameModel.initGameStateCollection();
@@ -90,6 +91,7 @@ const initializeCollections = async () => {
   await usersModel.initUserCollection();
 };
 
+// Iniciar conexión de base de datos y el servidor
 const startServer = async () => {
   try {
     await connectDB();
@@ -98,10 +100,13 @@ const startServer = async () => {
     await initializeCollections();
     console.log('Collections initialized');
 
+    const updatedUsersCount = await initializeUserPositions();
+    console.log(`${updatedUsersCount} usuarios actualizados con posiciones iniciales`);
+
     const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-      setInterval(decrementDragonAttributes, 10000);
+    server.listen(PORT, () => {
+      console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+      setInterval(socketController.decrementDragonAttributes, 10000); 
     });
   } catch (err) {
     console.error('Failed to start the server:', err);
@@ -111,4 +116,4 @@ const startServer = async () => {
 
 startServer();
 
-module.exports = app;
+module.exports = { app, io };
