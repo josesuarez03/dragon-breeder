@@ -122,6 +122,39 @@ const getUserByEmail = async (email) => {
     }
 };
 
+// Actualiza las posiciones de todos los usuarios sin posición inicial
+const initializeUserPositions = async () => {
+    try {
+        const result = await User.updateMany(
+            { "position.x": { $exists: false } },
+            {
+                $set: {
+                    "position.x": 400,
+                    "position.y": 400,
+                    "position.lastUpdate": new Date()
+                }
+            }
+        );
+        return result.nModified; // Retorna la cantidad de usuarios actualizados
+    } catch (error) {
+        console.error("Error al actualizar posiciones de usuarios:", error);
+        throw error;
+    }
+};
+
+// Obtener lista de usuarios en línea y sus posiciones
+const getOnlineUsersWithPositions = async () => {
+    try {
+        return await User.find(
+            { isOnline: true },
+            'userId username email dragons position'
+        );
+    } catch (error) {
+        console.error("Error al obtener usuarios en línea con posiciones:", error);
+        throw error;
+    }
+};
+
 
 // Exportar las funciones
 module.exports = {
@@ -135,5 +168,7 @@ module.exports = {
     findUserByUsername,  // Nueva exportación
     updateUser,          // Nueva exportación
     getUserByEmail,
-    getUserByUsername
+    getUserByUsername,
+    initializeUserPositions,
+    getOnlineUsersWithPositions
 };
