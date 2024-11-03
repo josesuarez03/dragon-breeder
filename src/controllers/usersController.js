@@ -49,7 +49,7 @@ exports.login = async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        const user = await findUserByUsername();
+        const user = await findUserByUsername(username);
 
         if (!user) {
             return res.status(401).json({ message: 'Credenciales inválidas' });
