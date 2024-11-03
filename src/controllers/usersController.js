@@ -41,56 +41,68 @@ exports.register = async (req, res) => {
     }
 };
 
-// Método para mostrar y procesar el login de usuarios
 exports.login = async (req, res) => {
     if (req.method === 'GET') {
-        return res.render('login', {layout: false});  // Renderiza la vista de login si es una solicitud GET
+        return res.render('login', {layout: false});
     }
 
     const { username, password } = req.body;
 
     try {
-        // Buscar el usuario por nombre de usuario
-        const user = await User.findOne({ username });
+        const user = await findUserByUsername();
 
         if (!user) {
             return res.status(401).json({ message: 'Credenciales inválidas' });
         }
 
-        // Comparar la contraseña ingresada con la almacenada
         const isMatch = await user.comparePassword(password);
 
         if (!isMatch) {
             return res.status(401).json({ message: 'Credenciales inválidas' });
         }
 
-        // Si el login es exitoso, actualizamos el estado `isOnline` del usuario
+        // Actualizar el estado online del usuario
         await updateUser(user._id, { isOnline: true });
 
-        // Establecer la sesión del usuario
-        req.session.userId = user._id;
-        req.session.userRole = user.role;
+        // Limpiar y configurar la sesión del usuario
+        req.session.regenerate(async (err) => {
+            if (err) {
+                console.error('Error regenerando la sesión:', err);
+                return res.status(500).json({ message: 'Error al iniciar sesión' });
+            }
 
-        // Verificar el rol del usuario
-        if (user.role === true) {
-            req.session.isAdmin = true;
-            res.redirect('/admin/dashboard'); // Redirigir a un panel de administrador
-        } else {
-            req.session.isAdmin = false;
-            res.redirect('/game'); // Redirigir al juego si es un usuario normal
-        }
+            req.session.userId = user._id;
+            req.session.userRole = user.role;
+            req.session.isAdmin = user.role === true;
+
+            // Reiniciar cualquier dato de dragones en la sesión
+            req.session.userDragons = []; // Para asegurarse de que los dragones de otro usuario no se filtren
+
+            // Redirigir según el rol
+            if (user.role === true) {
+                res.redirect('/admin/dashboard');
+            } else {
+                res.redirect('/game');
+            }
+        });
     } catch (error) {
         console.error('Error en el inicio de sesión:', error);
         res.status(500).json({ message: 'Error al iniciar sesión', error });
     }
 };
 
+
 exports.logout = async (req, res) => {
     try {
         if (req.session) {
             const userId = req.session.userId;
 
-            // Destruir la sesión
+            // Limpiar variables de sesión específicas antes de destruir la sesión
+            req.session.userId = null;
+            req.session.userRole = null;
+            req.session.isAdmin = null;
+            req.session.userDragons = null;
+
             req.session.destroy(async (err) => {
                 if (err) {
                     console.error('Error al destruir la sesión:', err);
@@ -99,7 +111,6 @@ exports.logout = async (req, res) => {
 
                 res.clearCookie('connect.sid');
 
-                // Si tenemos el userId, actualizamos el estado online del usuario
                 if (userId) {
                     try {
                         await updateUser(userId, { isOnline: false });
@@ -108,11 +119,9 @@ exports.logout = async (req, res) => {
                     }
                 }
 
-                // Redirigir a la página de inicio o login
                 res.redirect('/');
             });
         } else {
-            // Si no hay sesión, simplemente redirigimos
             res.redirect('/login');
         }
     } catch (error) {
@@ -120,6 +129,7 @@ exports.logout = async (req, res) => {
         res.status(500).json({ message: 'Error al cerrar sesión', error });
     }
 };
+
 
 // Método para mostrar los usuarios online
 exports.onlineUsers = async (req, res) => {
