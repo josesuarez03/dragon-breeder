@@ -21,7 +21,7 @@ const dragonCollection = new mongoose.Schema({
     specialAbilities: { type: Boolean, default: false},
     availableForBattle: {type: Boolean ,default: false},
     imageUrl:  String,
-    userId: mongoose.Schema.Types.ObjectId  // ID del usuario que posee el dragón
+    userId: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true}
 });
 
 const gameStateCollection = new mongoose.Schema({
