@@ -155,25 +155,16 @@ const openMysteryBox = async () => {
 
 const decrementDragonAttributes = async () => {
     try {
-        // Obtener todos los dragones que no sean huevos
         const dragons = await Dragon.find({ stage: { $ne: 'egg' } });
         
-        if (!dragons || dragons.length === 0) {
-            return [];
-        }
+        // Filtrar dragones sin userId para evitar errores de validación
+        const validDragons = dragons.filter(dragon => dragon.userId);
 
-        const updatePromises = dragons.map(async (dragon) => {
-            // Decrementar atributos
+        const updatePromises = validDragons.map(async (dragon) => {
             dragon.hungry = Math.max((dragon.hungry || 0) - 1, 0);
             dragon.energy = Math.max((dragon.energy || 0) - 1, 0);
-            
-            // Actualizar disponibilidad para batalla
-            dragon.availableForBattle = 
-                dragon.hungry >= 80 && 
-                dragon.energy >= 80 && 
-                dragon.health >= 80;
+            dragon.availableForBattle = dragon.hungry >= 80 && dragon.energy >= 80 && dragon.health >= 80;
 
-            // Guardar cambios
             return await dragon.save();
         });
 
