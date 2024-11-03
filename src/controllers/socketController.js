@@ -102,22 +102,18 @@ const onConnection = (io) => {
 
 const decrementDragonAttributes = async () => {
   try {
-      // Obtener y actualizar dragones
       const updatedDragons = await characterModel.decrementDragonAttributes();
       
       if (updatedDragons && updatedDragons.length > 0) {
-          // Agrupar dragones por userId
           const dragonsByUser = {};
-          
           for (const dragon of updatedDragons) {
-              if (dragon.userId) {
+              if (dragon.userId) { // Verifica que userId esté presente
                   if (!dragonsByUser[dragon.userId]) {
                       dragonsByUser[dragon.userId] = [];
                   }
                   dragonsByUser[dragon.userId].push(dragon);
               }
           }
-
           // Emitir actualizaciones a cada usuario
           for (const [userId, dragons] of Object.entries(dragonsByUser)) {
               const userSocket = userSockets.get(userId);
