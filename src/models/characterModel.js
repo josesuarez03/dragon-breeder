@@ -154,27 +154,34 @@ const openMysteryBox = async () => {
 };
 
 const decrementDragonAttributes = async () => {
-    // Obtener todos los dragones de la base de datos
-    let dragons = await getAllDragons(); // Asegúrate de que esta función esté devolviendo dragones de la base de datos
-    const updatePromises = dragons.map(async (dragon) => {
-        // Disminuir hambre y energía con el tiempo
-        const updatedDragon = await Dragon.findByIdAndUpdate(
-            dragon._id, // Asegúrate de usar el _id correcto
-            {
-                $set: {
-                    hungry: Math.max(dragon.hungry - 1, 0),  // Disminuir hambre, no menos de 0
-                    energy: Math.max(dragon.energy - 1, 0),  // Disminuir energía, no menos de 0
-                    availableForBattle: checkAvailableForBattle(dragon) // Método que tienes que definir
-                }
-            },
-            { new: true } // Devuelve el documento actualizado
-        );
+    try {
+        // Obtener todos los dragones que no sean huevos
+        const dragons = await Dragon.find({ stage: { $ne: 'egg' } });
+        
+        if (!dragons || dragons.length === 0) {
+            return [];
+        }
 
-        return updatedDragon; // Puedes manejar el dragón actualizado si es necesario
-    });
+        const updatePromises = dragons.map(async (dragon) => {
+            // Decrementar atributos
+            dragon.hungry = Math.max((dragon.hungry || 0) - 1, 0);
+            dragon.energy = Math.max((dragon.energy || 0) - 1, 0);
+            
+            // Actualizar disponibilidad para batalla
+            dragon.availableForBattle = 
+                dragon.hungry >= 80 && 
+                dragon.energy >= 80 && 
+                dragon.health >= 80;
 
-    // Espera a que todas las promesas se resuelvan
-    await Promise.all(updatePromises);
+            // Guardar cambios
+            return await dragon.save();
+        });
+
+        return await Promise.all(updatePromises);
+    } catch (error) {
+        console.error('Error al decrementar atributos:', error);
+        return [];
+    }
 };
 
 
