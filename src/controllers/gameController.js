@@ -71,26 +71,26 @@ exports.view = async (req, res) => {
 };
 
 exports.index = async (req, res) => {
-    if (!req.session.userId){
+    if (!req.session.userId) {
         return res.redirect('/login');
     }
     try {
-        const user = await findUserById(req.session.userId);
-        const gameState = await gameModel.getGameState(req.session.userId);
-        const dragons = await characterModel.getAllCharacters(req.session.userId);
+        const userId = req.session.userId;
+        const user = await findUserById(userId);
+        const dragons = await characterModel.getAllCharacters(userId); // Cargar los dragones específicos del usuario
 
         if (dragons.length === 0) {
             return res.redirect('/box-eggs');
         }
-        // Obtener el personaje activo del gameState
+
+        // Obtener el dragón activo si existe en el estado del juego o seleccionar el primero
         let character = null;
+        const gameState = await gameModel.getGameState(userId);
         if (gameState && gameState.characterId) {
             character = await characterModel.findCharacterById(gameState.characterId);
         } else if (dragons.length > 0) {
-            // Si no hay personaje activo pero hay dragones, usar el primero
             character = dragons[0];
-            // Actualizar el gameState con este dragón
-            await gameModel.updateGameState(req.session.userId, { characterId: character._id });
+            await gameModel.updateGameState(userId, { characterId: character._id });
         }
 
         res.render('game', {
@@ -98,13 +98,14 @@ exports.index = async (req, res) => {
             user,
             gameState,
             dragons,
-            character // Añadimos el character a la vista
+            character, // Pasar el personaje a la vista
         });
     } catch (error) {
         console.error('Error loading game:', error);
         res.status(500).send('Error al cargar el juego');
     }
 };
+
 
 exports.register = (req, res) => {
     res.render('register');
@@ -130,7 +131,7 @@ exports.saveDragon = async (req, res) => {
             userId: req.session.userId
         };
         await characterModel.createDragon(dragonData);
-        res.redirect('/');
+        res.redirect('/game');
     } catch (error) {
         console.error('Error saving dragon:', error);
         res.status(500).send('Error al guardar el dragón');
@@ -189,16 +190,15 @@ exports.breed = async (req, res) => {
     }
 };
 
-// gameController.js - Actualizar el método chooseCharacter
 exports.chooseCharacter = async (req, res) => {
     try {
         const dragonId = req.body.characterId;
         const userId = req.session.userId;
 
-        // Actualizar el gameState con el nuevo characterId
+        // Actualizar el gameState con el nuevo dragonId
         await gameModel.updateGameState(userId, { characterId: dragonId });
 
-        // Redireccionar a la página del juego
+        // Redirigir a la página del juego
         res.redirect('/game');
     } catch (error) {
         console.error('Error al seleccionar el dragón:', error);
