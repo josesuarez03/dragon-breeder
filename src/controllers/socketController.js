@@ -102,18 +102,37 @@ const onConnection = (io) => {
 
 const decrementDragonAttributes = async () => {
   try {
-      const users = await getOnlineUsersWithPositions();
-      const usersWithDragons = users.filter(user => user.dragons && user.dragons.length > 0);
+      // Obtener y actualizar dragones
+      const updatedDragons = await characterModel.decrementDragonAttributes();
       
-      for (const user of usersWithDragons) {
-          const updatedDragons = await characterModel.decrementDragonAttributes(user.userId);
+      if (updatedDragons && updatedDragons.length > 0) {
+          // Agrupar dragones por userId
+          const dragonsByUser = {};
           
-          if (updatedDragons.length > 0) {
-              const userSocket = userSockets.get(user.userId);
+          for (const dragon of updatedDragons) {
+              if (dragon.userId) {
+                  if (!dragonsByUser[dragon.userId]) {
+                      dragonsByUser[dragon.userId] = [];
+                  }
+                  dragonsByUser[dragon.userId].push(dragon);
+              }
+          }
+
+          // Emitir actualizaciones a cada usuario
+          for (const [userId, dragons] of Object.entries(dragonsByUser)) {
+              const userSocket = userSockets.get(userId);
               if (userSocket) {
-                  userSocket.emit('dragon-update', { 
-                      userId: user.userId, 
-                      dragons: updatedDragons 
+                  userSocket.emit('dragon-update', {
+                      userId,
+                      dragons: dragons.map(dragon => ({
+                          _id: dragon._id,
+                          name: dragon.name,
+                          hungry: dragon.hungry,
+                          energy: dragon.energy,
+                          health: dragon.health,
+                          availableForBattle: dragon.availableForBattle,
+                          stage: dragon.stage
+                      }))
                   });
               }
           }
