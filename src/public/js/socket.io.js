@@ -21,14 +21,8 @@ socket.on('dragon-update', ({ userId, dragons }) => {
     }
 });
 
-// Actualización de usuarios en línea
-socket.on('users-online-update', (onlineUsers) => {
-    // Actualizar lista de usuarios
-    updateUsersList(onlineUsers);
-    // Actualizar posiciones en el mapa si está visible
-    if (window.updateUsersPositions) {
-        window.updateUsersPositions(onlineUsers);
-    }
+socket.on('users-online-updated', (onlineUsers) => {
+  updateOnlineUsersList(onlineUsers);
 });
 
 // Actualización de posición de personaje
@@ -76,20 +70,20 @@ function updateDragonStats(dragon) {
     }
 }
 
-function updateUsersList(users) {
-    const usersList = document.querySelector('.list-group');
-    if (!usersList) return;
+function updateOnlineUsersList(onlineUsers) {
+  const usersList = document.querySelector('.list-group');
+  if (!usersList) return;
 
-    usersList.innerHTML = users.length === 0 
-        ? '<li class="list-group-item">No hay usuarios en línea.</li>'
-        : users.map(user => `
-            <li class="list-group-item">
-                ${user.username} - ${user.email}
-                ${user.dragons && user.dragons.length > 0 ? 
-                    `<span class="badge badge-primary">🐉 ${user.dragons.length}</span>` 
-                    : ''}
-            </li>
-        `).join('');
+  usersList.innerHTML = onlineUsers.length === 0
+    ? '<li class="list-group-item">No hay usuarios en línea.</li>'
+    : onlineUsers.map(user => `
+        <li class="list-group-item">
+          ${user.username} - ${user.email}
+          ${user.dragons && user.dragons.length > 0 ?
+            `<span class="badge badge-primary">🐉 ${user.dragons.length}</span>`
+            : ''}
+        </li>
+      `).join('');
 }
 
 // Función para emitir actualización de posición

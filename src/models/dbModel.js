@@ -51,7 +51,8 @@ const usersCollection = new  mongoose.Schema({
         x: { type: Number, default: 400 }, // Posición inicial x
         y: { type: Number, default: 400 }, // Posición inicial y
         lastUpdate: { type: Date, default: Date.now }
-    }
+    },
+    activeCharacterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Dragon' }
 });
 
 // Middleware para hashear la contraseña antes de guardar el usuario

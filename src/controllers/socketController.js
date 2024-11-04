@@ -2,6 +2,7 @@ const { findUserById, getOnlineUsersWithPositions, updateUser} = require('../mod
 const characterModel = require('../models/characterModel');
 
 const userSockets = new Map();
+const userSessions = new Map();
 
 const onConnection = (io) => {
   io.on('connection', (socket) => {
@@ -9,28 +10,38 @@ const onConnection = (io) => {
   
       // Manejar conexión de usuario
       socket.on('user-connected', async (userData) => {
-          try {
-              // Actualizar estado online y establecer posición inicial
-              const updateData = {
-                  isOnline: true,
-                  position: { 
-                      x: 400, 
-                      y: 400, 
-                      lastUpdate: new Date() 
-                  }
-              };
+        try {
+            const user = await findUserById(userData.userId);
+            if (!user) return;
 
-              await updateUser(userData.userId, updateData);
-              userSockets.set(userData.userId, socket);
-  
-              // Obtener usuarios online con sus posiciones
-              const onlineUsers = await getOnlineUsersWithPositions();
-  
-              // Emitir lista actualizada de usuarios online
-              io.emit('users-online-update', onlineUsers);
-          } catch (error) {
-              console.error('Error en conexión de usuario:', error);
-          }
+            // Add new socket connection while preserving existing ones
+            const userSocketSet = userSockets.get(userData.userId) || new Set();
+            userSocketSet.add(socket);
+            userSockets.set(userData.userId, userSocketSet);
+
+            // Track session
+            userSessions.set(socket.id, {
+                userId: userData.userId,
+                sessionId: userData.sessionId
+            });
+
+            const updateData = {
+                isOnline: true,
+                position: {
+                    x: 400,
+                    y: 400,
+                    lastUpdate: new Date()
+                }
+            };
+
+            await updateUser(userData.userId, updateData);
+
+            // Emit online users list to all clients
+            const onlineUsers = await getOnlineUsersWithPositions();
+            io.emit('users-online-update', onlineUsers);
+        } catch (error) {
+            console.error('Error en conexión de usuario:', error);
+        }
       });
   
       // Manejar actualización de posición
@@ -85,18 +96,30 @@ const onConnection = (io) => {
   
       // Manejar desconexión de usuario
       socket.on('disconnect', async () => {
-          try {
-              const userId = Array.from(userSockets.keys()).find(key => userSockets.get(key) === socket);
-              if (userId) {
-                  await updateUser(userId, { isOnline: false });
-                  userSockets.delete(userId);
-                  io.emit('user-disconnected', userId);
-              }
-              console.log(`Usuario ${userId} desconectado: ${socket.id}`);
-          } catch (error) {
-              console.error('Error al manejar la desconexión:', error);
-          }
-      });
+        try {
+            const sessionData = userSessions.get(socket.id);
+            if (!sessionData) return;
+
+            const { userId } = sessionData;
+            const userSocketSet = userSockets.get(userId);
+
+            if (userSocketSet) {
+                userSocketSet.delete(socket);
+                
+                // Only set user offline if no active sockets remain
+                if (userSocketSet.size === 0) {
+                    userSockets.delete(userId);
+                    await updateUser(userId, { isOnline: false });
+                    io.emit('user-disconnected', userId);
+                }
+            }
+
+            userSessions.delete(socket.id);
+            console.log(`Socket desconectado: ${socket.id}`);
+        } catch (error) {
+            console.error('Error al manejar la desconexión:', error);
+        }
+    });
   });
 };
 

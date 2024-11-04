@@ -61,8 +61,6 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: 'Credenciales inválidas' });
         }
 
-        // Actualizar el estado online del usuario
-        await updateUser(user._id, { isOnline: true });
 
         // Limpiar y configurar la sesión del usuario
         req.session.regenerate(async (err) => {
@@ -74,6 +72,11 @@ exports.login = async (req, res) => {
             req.session.userId = user._id;
             req.session.userRole = user.role;
             req.session.isAdmin = user.role === true;
+
+            await updateUser(user._id, { 
+                isOnline: true,
+                lastSessionId: req.session.id // Store current session ID
+            });
 
             // Reiniciar cualquier dato de dragones en la sesión
             req.session.userDragons = []; // Para asegurarse de que los dragones de otro usuario no se filtren
