@@ -135,7 +135,12 @@ exports.logout = async (req, res) => {
 exports.onlineUsers = async (req, res) => {
     try {
         const onlineUsers = await User.find({ isOnline: true });
-        res.render('users/onlineUsers', { users: onlineUsers });
+        res.render('users/onlineUsers', { 
+            users: onlineUsers,
+            user: req.session.userId ? {
+                id: req.session.userId
+            } : null
+        });
     } catch (error) {
         res.status(500).json({ message: 'Error al obtener los usuarios en línea', error });
     }
