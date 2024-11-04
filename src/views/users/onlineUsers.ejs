@@ -45,8 +45,25 @@
         </div>
     
     </div>
-    <script src="js/socket.io.js"></script>
+
     <script>
+
+        // Inicializar variables de usuario de forma segura
+        let currentUser = null;
+        if (typeof user !== 'undefined' && user) { 
+            currentUser = {
+                id: '<%= user.id %>',
+                username: '<%= user.username %>'
+            };
+        } 
+
+        // Inicializar la conexión del usuario cuando la página se carga
+        document.addEventListener('DOMContentLoaded', function() {
+            if (currentUser && currentUser.id) { 
+                initializeUserConnection(currentUser.id);
+            } 
+        });
+
         // Recuperar preferencias guardadas
         const savedTimeMode = localStorage.getItem('timeMode') || 'system';
         document.getElementById('timeMode').value = savedTimeMode;
@@ -83,5 +100,6 @@
         });
     </script>
     <script src="js/sketch.js"></script>
+    <script src="js/socket.io.js"></script>
 </body>
 </html>
