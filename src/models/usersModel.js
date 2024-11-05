@@ -142,6 +142,23 @@ const initializeUserPositions = async () => {
     }
 };
 
+const initMissingField = async () => {
+    try {
+        // Encuentra todos los usuarios sin el campo 'activeCharacterId'
+        const usersWithoutField = await User.find({ activeCharacterId: { $exists: false } });
+
+        // Actualizar cada usuario sin el campo
+        for (let user of usersWithoutField) {
+            await user.updateMissingField();
+        }
+
+        console.log(`Campo 'activeCharacterId' actualizado en ${usersWithoutField.length} usuarios.`);
+    } catch (error) {
+        console.error(`Error al actualizar el campo 'activeCharacterId' de usuarios:`, error);
+        throw error;
+    }
+};
+
 // Obtener lista de usuarios en línea y sus posiciones
 const getOnlineUsersWithPositions = async () => {
     try {
@@ -170,5 +187,6 @@ module.exports = {
     getUserByEmail,
     getUserByUsername,
     initializeUserPositions,
-    getOnlineUsersWithPositions
+    getOnlineUsersWithPositions,
+    initMissingField
 };

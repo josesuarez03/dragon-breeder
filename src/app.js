@@ -8,7 +8,7 @@ const gameRoutes = require('../src/routes/gameRoutes');
 const characterModel = require('./models/characterModel');
 const {connectDB, mongoURL} = require('./config/database');
 const gameModel = require('./models/gameModel');
-const { initializeUserPositions, initUserCollection } = require('./models/usersModel');
+const { initializeUserPositions, initUserCollection, initMissingField } = require('./models/usersModel');
 const MongoStore = require('connect-mongo');
 const passport = require('./config/passportConfig');
 const User = require('./models/usersModel');
@@ -102,6 +102,8 @@ const startServer = async () => {
 
     const updatedUsersCount = await initializeUserPositions();
     console.log(`${updatedUsersCount} usuarios actualizados con posiciones iniciales`);
+
+    await initMissingField();
 
     const PORT = process.env.PORT || 3000;
     server.listen(PORT, () => {
