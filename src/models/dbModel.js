@@ -44,8 +44,8 @@ const usersCollection = new  mongoose.Schema({
     password: { type: String, required: true },
     role: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
-    dragons: [dragonCollection], // Array de dragones del usuario
-    gameState: [gameStateCollection], // Estado del juego del usuario
+    dragons: {type: [dragonCollection], default: []}, // Array de dragones del usuario
+    gameState: {type: [gameStateCollection], default: []}, // Estado del juego del usuario
     isOnline: {type: Boolean, default: false},
     position : {
         x: { type: Number, default: 400 }, // Posición inicial x
@@ -85,6 +85,13 @@ usersCollection.methods.updatePosition = async function(x, y) {
 };
 
 usersCollection.index({ 'position.x': 1, 'position.y': 1 });
+
+usersCollection.methods.updateMissingField = async function () {
+    if (this.activeCharacterId === undefined){
+        this.activeCharacterId = null;
+        await this.save();
+    }
+};
 
 const Dragon = mongoose.model('Dragon', dragonCollection);
 const GameState = mongoose.model('GameState', gameStateCollection);
