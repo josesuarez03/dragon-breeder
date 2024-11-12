@@ -41,15 +41,11 @@
     </div>
 </div>
 
-<script src="js/socket.io.js"></script>
+
 <script>
-    const userId = '<%= user ? user.id : "" %>';
-    
-    // Inicializar la conexión del usuario cuando la página se carga
-    document.addEventListener('DOMContentLoaded', function() {
-        if (userId) { 
-            initializeUserConnection(userId);
-        } 
+    document.addEventListener('DOMContentLoaded', () => {
+        const userId = '<%= userId %>'; // Asegúrate de pasar esto desde el servidor
+        initializeSocket(userId);
     });
     async function handleAction(dragonId, action) {
         try {
