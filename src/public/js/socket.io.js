@@ -1,136 +1,121 @@
-// Inicializar socket
-const socket = io();
-
-// Variables para el estado del usuario actual
+// socket.io.js (cliente)
+let socket;
 let currentUserId;
+let myDragons = [];
 
-// Función para inicializar la conexión del usuario
-function initializeUserConnection(userId) {
+function initializeSocket(userId) {
+    socket = io();
     currentUserId = userId;
-    socket.emit('user-connected', { userId });
-    // Solicitar posiciones iniciales para el mapa
-    socket.emit('request-initial-positions');
-}
 
-// Actualización de atributos del dragón
-socket.on('dragon-update', ({ userId, dragons }) => {
-    // Solo actualizar si es nuestro dragón
-    if (userId === currentUserId && dragons.length > 0) {
-        const dragon = dragons[0]; // Asumiendo que trabajamos con el primer dragón
-        updateDragonStats(dragon);
-    }
-});
+    // Conexión inicial
+    socket.on('connect', () => {
+        socket.emit('user-connected', {
+          userId: currentUserId // Asegúrate de tener acceso al ID del usuario actual
+        });
+    });
 
-socket.on('users-online-updated', (onlineUsers) => {
-  updateOnlineUsersList(onlineUsers);
-});
+    // Manejar la inicialización
+    socket.on('initialization', (data) => {
+        if (data.userId === currentUserId) {
+            myDragons = data.dragons;
+            updateDragonDisplay(myDragons);
+            if (data.position) {
+                updateMyPosition(data.position);
+            }
+        }
+    });
 
-// Actualización de posición de personaje
-socket.on('character-position-update', ({ userId, position, timestamp }) => {
-    if (window.updateUserPosition) {
-        window.updateUserPosition(userId, position);
-    }
-});
+    // Actualización de dragones
+    socket.on('dragon-update', ({ dragon }) => {
+        const index = myDragons.findIndex(d => d._id === dragon._id);
+        if (index !== -1) {
+            myDragons[index] = { ...myDragons[index], ...dragon };
+            updateDragonStats(myDragons[index]);
+        }
+        updateDragonUI(data.dragon);
+    });
 
-// Manejar desconexión de usuario
-socket.on('user-disconnected', (userId) => {
-    removeUserFromList(userId);
-    if (window.removeUserFromMap) {
-        window.removeUserFromMap(userId);
-    }
-});
+    // Actualización de posición de otros usuarios
+    socket.on('character-position-update', ({ userId, position }) => {
+        if (userId !== currentUserId) {
+            updateOtherUserPosition(userId, position);
+        }
+    });
 
-// Funciones de actualización de la interfaz
-function updateDragonStats(dragon) {
-    if (!dragon) return;
+    // En tu código cliente
+    socket.on('session-expired', (data) => {
+        alert(data.message);
+        // Redirigir al login o recargar la página
+        window.location.href = '/login';
+    });
 
-    // Actualizar estadísticas del dragón
-    const energyElement = document.querySelector('.energyLevel');
-    const healthElement = document.querySelector('.healthLevel');
-    const battleElement = document.querySelector('.availableBattle');
-    const battleButton = document.querySelector('.btn-battle');
-    const evolveButton = document.querySelector('.btn-evolve');
+    // Manejo de desconexión de otros usuarios
+    socket.on('user-disconnected', (userId) => {
+        removeUserFromMap(userId);
+    });
 
-    if (energyElement) energyElement.textContent = `${dragon.energy} ⚡`;
-    if (healthElement) healthElement.textContent = `${dragon.health} ❤️`;
-    
-    if (battleElement) {
-        battleElement.textContent = dragon.availableForBattle 
-            ? 'Disponible para luchar' 
-            : 'No disponible para luchar';
-    }
-    
-    if (battleButton) battleButton.disabled = !dragon.availableForBattle;
-    if (evolveButton) evolveButton.disabled = dragon.stage === 'adult';
-
-    // Si hay una imagen, actualizarla según el stage del dragón
-    const dragonImage = document.querySelector('.dragon-image');
-    if (dragonImage && dragon.stage) {
-        dragonImage.src = `/sprites/dragons/${dragon.stage}-dragon.png`;
-    }
-}
-
-function updateOnlineUsersList(onlineUsers) {
-  const usersList = document.querySelector('.list-group');
-  if (!usersList) return;
-
-  usersList.innerHTML = onlineUsers.length === 0
-    ? '<li class="list-group-item">No hay usuarios en línea.</li>'
-    : onlineUsers.map(user => `
-        <li class="list-group-item">
-          ${user.username} - ${user.email}
-          ${user.dragons && user.dragons.length > 0 ?
-            `<span class="badge badge-primary">🐉 ${user.dragons.length}</span>`
-            : ''}
-        </li>
-      `).join('');
-}
-
-// Función para emitir actualización de posición
-function emitPositionUpdate(x, y) {
-    if (!currentUserId) return;
-    
-    socket.emit('position-update', {
-        userId: currentUserId,
-        position: { x, y }
+    // Manejo de errores
+    socket.on('error', ({ message }) => {
+        console.error('Socket error:', message);
+        showErrorMessage(message);
     });
 }
 
-// Función para manejar los resultados de las acciones del dragón
-async function handleDragonAction(dragonId, action) {
-    try {
-        const response = await fetch(`/dragon/${dragonId}/action`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ action })
-        });
+function updateDragonDisplay(dragons) {
+    const dragonContainer = document.querySelector('.dragon-container');
+    if (!dragonContainer) return;
 
-        const data = await response.json();
-        
-        if (data.success) {
-            // La actualización real vendrá a través del socket
-            // pero podemos hacer una actualización inmediata para mejor UX
-            updateDragonStats(data.dragon);
-        } else {
-            console.error('Error:', data.message);
-            // Mostrar mensaje de error al usuario
-            showError(data.message);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        showError('Error al realizar la acción');
+    dragonContainer.innerHTML = dragons.map(dragon => `
+        <div class="dragon-card" data-id="${dragon._id}">
+            <h3>${dragon.name}</h3>
+            <div class="stats">
+                <div class="energy">Energy: ${dragon.energy}⚡</div>
+                <div class="health">Health: ${dragon.health}❤️</div>
+                <div class="hungry">Hungry: ${dragon.hungry}🍖</div>
+            </div>
+            <div class="status">
+                ${dragon.availableForBattle ? '✅ Ready for battle' : '❌ Not ready'}
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateMyPosition(position) {
+    if (window.updatePlayerPosition) {
+        window.updatePlayerPosition(position.x, position.y);
     }
 }
 
-// Funciones de utilidad
-function showError(message) {
-    // Implementar según el diseño de tu UI
-    alert(message);
+function updateOtherUserPosition(userId, position) {
+    if (window.updateOtherPlayerPosition) {
+        window.updateOtherPlayerPosition(userId, position);
+    }
 }
 
-// Exportar funciones necesarias para otros scripts
-window.initializeUserConnection = initializeUserConnection;
+function removeUserFromMap(userId) {
+    if (window.removePlayer) {
+        window.removePlayer(userId);
+    }
+}
+
+function emitPositionUpdate(x, y) {
+    if (socket && currentUserId) {
+        socket.emit('position-update', {
+            position: { x, y }
+        });
+    }
+}
+
+function showErrorMessage(message) {
+    const errorDiv = document.getElementById('error-messages') || 
+                    document.createElement('div');
+    errorDiv.id = 'error-messages';
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    document.body.appendChild(errorDiv);
+    setTimeout(() => errorDiv.remove(), 3000);
+}
+
+// Exportar funciones necesarias
+window.initializeSocket = initializeSocket;
 window.emitPositionUpdate = emitPositionUpdate;
-window.handleDragonAction = handleDragonAction;
