@@ -103,8 +103,6 @@ const startServer = async () => {
     const updatedUsersCount = await initializeUserPositions();
     console.log(`${updatedUsersCount} usuarios actualizados con posiciones iniciales`);
 
-    await initMissingField();
-
     const PORT = process.env.PORT || 3000;
     server.listen(PORT, () => {
       console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
