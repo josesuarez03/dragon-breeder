@@ -1,163 +1,199 @@
 const { findUserById, getOnlineUsersWithPositions, updateUser} = require('../models/usersModel');
 const characterModel = require('../models/characterModel');
 
-const userSockets = new Map();
-const userSessions = new Map();
+// Mapa para mantener múltiples sockets por usuario
+const userSockets = new Map(); // userId -> Set of sockets
+const activeUsers = new Map(); // userId -> user data
 
 const onConnection = (io) => {
-  io.on('connection', (socket) => {
-      console.log('Nueva conexión:', socket.id);
-  
-      // Manejar conexión de usuario
-      socket.on('user-connected', async (userData) => {
-        try {
-            const user = await findUserById(userData.userId);
-            if (!user) return;
+  io.on('connection', async (socket) => {
+    console.log('Nueva conexión:', socket.id);
 
-            // Add new socket connection while preserving existing ones
-            const userSocketSet = userSockets.get(userData.userId) || new Set();
-            userSocketSet.add(socket);
-            userSockets.set(userData.userId, userSocketSet);
+    socket.on('user-connected', async (userData) => {
+      try {
+        const { userId } = userData;
+        
+        if (!userId) {
+          socket.emit('error', { message: 'No user ID provided' });
+          return;
+        }
 
-            // Track session
-            userSessions.set(socket.id, {
-                userId: userData.userId,
-                sessionId: userData.sessionId
+        const user = await findUserById(userId);
+        if (!user) {
+          socket.emit('error', { message: 'User not found' });
+          return;
+        }
+
+        // Crear una sala única para el usuario
+        const userRoom = `user_${userId}`;
+        socket.join(userRoom);
+
+        // Almacenar información del socket
+        socket.userId = userId;
+
+        // Inicializar o actualizar el Set de sockets para este usuario
+        if (!userSockets.has(userId)) {
+          userSockets.set(userId, new Set());
+        }
+        userSockets.get(userId).add(socket);
+
+        // Actualizar o inicializar datos del usuario activo
+        if (!activeUsers.has(userId)) {
+          activeUsers.set(userId, {
+            lastActive: Date.now(),
+            position: {
+              x: 400,
+              y: 400
+            }
+          });
+        }
+
+        // Obtener dragones específicos del usuario
+        const userDragons = await characterModel.getUserDragons(userId);
+        
+        // Emitir datos de inicialización específicos del usuario
+        socket.emit('initialization', {
+          userId,
+          dragons: userDragons,
+          position: activeUsers.get(userId).position
+        });
+
+        // Emitir lista actualizada de usuarios activos a todos
+        const onlineUsers = Array.from(activeUsers.keys()).map(id => ({
+          userId: id,
+          position: activeUsers.get(id).position
+        }));
+        
+        io.emit('users-online-update', onlineUsers);
+
+        // Actualizar estado en la base de datos
+        await updateUser(userId, {
+          isOnline: true,
+          lastActive: new Date(),
+          position: activeUsers.get(userId).position
+        });
+
+        // Log para depuración
+        console.log(`Usuario ${userId} conectado. Sockets activos: ${userSockets.get(userId).size}`);
+
+      } catch (error) {
+        console.error('Error en conexión de usuario:', error);
+        socket.emit('error', { message: 'Error connecting user' });
+      }
+    });
+
+    socket.on('position-update', async (data) => {
+      try {
+        const { position } = data;
+        const userId = socket.userId;
+
+        if (!userId || !userSockets.has(userId)) {
+          return;
+        }
+
+        // Actualizar posición en memoria
+        if (activeUsers.has(userId)) {
+          activeUsers.get(userId).position = position;
+        }
+
+        // Emitir actualización a todos los demás sockets excepto al emisor
+        socket.broadcast.emit('character-position-update', {
+          userId,
+          position,
+          timestamp: Date.now()
+        });
+
+        // Actualizar en base de datos
+        await updateUser(userId, {
+          position: position,
+          lastActive: new Date()
+        });
+
+      } catch (error) {
+        console.error('Error actualizando posición:', error);
+      }
+    });
+
+    socket.on('disconnect', async () => {
+      try {
+        const userId = socket.userId;
+        if (!userId) return;
+
+        const userSocketSet = userSockets.get(userId);
+        if (userSocketSet) {
+          userSocketSet.delete(socket);
+
+          // Solo eliminar datos del usuario si no quedan sockets activos
+          if (userSocketSet.size === 0) {
+            userSockets.delete(userId);
+            activeUsers.delete(userId);
+
+            // Actualizar estado en base de datos
+            await updateUser(userId, {
+              isOnline: false,
+              lastActive: new Date()
             });
 
-            const updateData = {
-                isOnline: true,
-                position: {
-                    x: 400,
-                    y: 400,
-                    lastUpdate: new Date()
-                }
-            };
-
-            await updateUser(userData.userId, updateData);
-
-            // Emit online users list to all clients
-            const onlineUsers = await getOnlineUsersWithPositions();
-            io.emit('users-online-update', onlineUsers);
-        } catch (error) {
-            console.error('Error en conexión de usuario:', error);
-        }
-      });
-  
-      // Manejar actualización de posición
-      socket.on('position-update', async ({ userId, position }) => {
-          try {
-              if (!userId || typeof position.x !== 'number' || typeof position.y !== 'number') {
-                  return console.error('Datos de posición inválidos:', userId, position);
-              }
-
-              const user = await findUserById(userId);
-              
-              if (!user) {
-                  console.error('Usuario no encontrado:', userId);
-                  return;
-              }
-
-              const updateData = {
-                  position: {
-                      x: position.x,
-                      y: position.y,
-                      lastUpdate: new Date()
-                  }
-              };
-
-              await updateUser(userId, updateData);
-
-              // Emitir actualización a otros usuarios
-              socket.broadcast.emit('character-position-update', { 
-                  userId, 
-                  position,
-                  timestamp: Date.now()
-              });
-          } catch (error) {
-              console.error('Error actualizando posición:', error);
+            // Notificar a otros usuarios
+            socket.broadcast.emit('user-disconnected', userId);
           }
-      });
-  
-      // Manejar solicitud de posiciones iniciales
-      socket.on('request-initial-positions', async () => {
-          try {
-              const onlineUsers = await getOnlineUsersWithPositions();
-              
-              socket.emit('initial-positions', onlineUsers.map(user => ({
-                  userId: user.userId,
-                  username: user.username,
-                  position: user.position
-              })));
-          } catch (error) {
-              console.error('Error obteniendo posiciones iniciales:', error);
-          }
-      });
-  
-      // Manejar desconexión de usuario
-      socket.on('disconnect', async () => {
-        try {
-            const sessionData = userSessions.get(socket.id);
-            if (!sessionData) return;
 
-            const { userId } = sessionData;
-            const userSocketSet = userSockets.get(userId);
-
-            if (userSocketSet) {
-                userSocketSet.delete(socket);
-                
-                // Only set user offline if no active sockets remain
-                if (userSocketSet.size === 0) {
-                    userSockets.delete(userId);
-                    await updateUser(userId, { isOnline: false });
-                    io.emit('user-disconnected', userId);
-                }
-            }
-
-            userSessions.delete(socket.id);
-            console.log(`Socket desconectado: ${socket.id}`);
-        } catch (error) {
-            console.error('Error al manejar la desconexión:', error);
+          // Log para depuración
+          console.log(`Socket desconectado para usuario ${userId}. Sockets restantes: ${userSocketSet.size}`);
         }
+
+        socket.leave(`user_${userId}`);
+      } catch (error) {
+        console.error('Error en desconexión:', error);
+      }
+    });
+
+    // Manejar actualizaciones de dragones
+    socket.on('dragon-update', async (data) => {
+      try {
+        const userId = socket.userId;
+        if (!userId || !userSockets.has(userId)) return;
+
+        const userSocketSet = userSockets.get(userId);
+        // Emitir la actualización a todos los sockets del mismo usuario
+        userSocketSet.forEach(userSocket => {
+          if (userSocket.id !== socket.id) {
+            userSocket.emit('dragon-update', data);
+          }
+        });
+      } catch (error) {
+        console.error('Error en actualización de dragón:', error);
+      }
     });
   });
 };
 
-const decrementDragonAttributes = async () => {
+const decrementDragonAttributes = async (io) => {
   try {
-      const updatedDragons = await characterModel.decrementDragonAttributes();
-      
-      if (updatedDragons && updatedDragons.length > 0) {
-          const dragonsByUser = {};
-          for (const dragon of updatedDragons) {
-              if (dragon.userId) { // Verifica que userId esté presente
-                  if (!dragonsByUser[dragon.userId]) {
-                      dragonsByUser[dragon.userId] = [];
-                  }
-                  dragonsByUser[dragon.userId].push(dragon);
-              }
-          }
-          // Emitir actualizaciones a cada usuario
-          for (const [userId, dragons] of Object.entries(dragonsByUser)) {
-              const userSocket = userSockets.get(userId);
-              if (userSocket) {
-                  userSocket.emit('dragon-update', {
-                      userId,
-                      dragons: dragons.map(dragon => ({
-                          _id: dragon._id,
-                          name: dragon.name,
-                          hungry: dragon.hungry,
-                          energy: dragon.energy,
-                          health: dragon.health,
-                          availableForBattle: dragon.availableForBattle,
-                          stage: dragon.stage
-                      }))
-                  });
-              }
-          }
+    const updatedDragons = await characterModel.decrementDragonAttributes();
+    
+    for (const dragon of updatedDragons) {
+      if (dragon.userId && userSockets.has(dragon.userId)) {
+        const userSocketSet = userSockets.get(dragon.userId);
+        
+        // Emitir actualización a todos los sockets del usuario
+        userSocketSet.forEach(socket => {
+          socket.emit('dragon-update', {
+            dragon: {
+              _id: dragon._id,
+              name: dragon.name,
+              hungry: dragon.hungry,
+              energy: dragon.energy,
+              health: dragon.health,
+              availableForBattle: dragon.availableForBattle,
+              stage: dragon.stage
+            }
+          });
+        });
       }
-  } catch (err) {
-      console.error('Error decrementando atributos:', err);
+    }
+  } catch (error) {
+    console.error('Error decrementando atributos:', error);
   }
 };
 
