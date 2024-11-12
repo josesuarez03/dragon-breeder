@@ -32,6 +32,10 @@ const getAllDragons = async () => {
     }
 };
 
+const getUserDragons = async (userId) => {
+    return await Dragon.find({ userId: userId });
+  };
+
 const createDragon = async (dragonData) => {
     try {
         const newDragon = new Dragon(dragonData);
@@ -316,6 +320,7 @@ const characterModel = {
     getRandomEgg,
     createEgg,
     deleteDragon,
+    getUserDragons,
     getAllCharacters: getAllDragons,
 
     findCharacterById: findDragonById,
