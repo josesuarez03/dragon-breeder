@@ -5,6 +5,4 @@ mongo
 !packages.json
 !packages-lock.json
 .env
-*.txt
-test
 *.zip
