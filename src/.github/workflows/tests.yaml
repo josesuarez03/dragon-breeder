@@ -2,20 +2,17 @@ name: Test Playwright Pipeline
 
 on:
   push:
-    branches: master 
+    branches:
+      - master
   pull_request:
-    branches: master 
+    branches:
+      - master
 
 jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      MONGO_HOST: ${{ secrets.MONGO_HOST }}
-      MONGO_PORT: ${{ secrets.MONGO_PORT }}
-      MONGO_DB: ${{ secrets.MONGO_DB }}
-      MONGO_USER: ${{ secrets.MONGO_USER }}
-      MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
-      BASE_URL: ${{ secrets.BASE_URL }}
+      SECRET_APP: ${{ secrets.SECRET_APP }}  # Cargar el secreto completo
 
     services:
       mongodb:
@@ -37,19 +34,7 @@ jobs:
     - name: Debug Secrets Availability
       run: |
         echo "Checking if secrets are available..."
-        if [ -n "${{ secrets.MONGO_HOST }}" ]; then
-          echo "MONGO_HOST is set"
-        else
-          echo "MONGO_HOST is not set"
-        fi
-        # No imprimas los valores reales, solo verifica si están definidos
-        for var in MONGO_PORT MONGO_DB MONGO_USER BASE_URL; do
-          if [ -n "${{ secrets[var] }}" ]; then
-            echo "$var is set"
-          else
-            echo "$var is not set"
-          fi
-        done
+        echo $SECRET_APP | base64 --decode > .env   # Decodifica el secreto y guarda las variables en un archivo .env
 
     - name: Set up Node.js
       uses: actions/setup-node@v4
