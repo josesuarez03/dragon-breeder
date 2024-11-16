@@ -13,6 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SECRET_APP: ${{ secrets.SECRET_APP }}
+      PYTHONPATH: ${{ github.workspace }}
+      MONGO_HOST: localhost
+      MONGO_PORT: 27017
+      MONGO_DB: DB
+      MONGO_USER: ${{ secrets.MONGO_USER }}
+      MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 
     services:
       mongodb:
@@ -23,6 +29,11 @@ jobs:
           MONGO_INITDB_DATABASE: DB
         ports:
           - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v4
@@ -51,25 +62,30 @@ jobs:
         cd src
         conda activate test-dragon
         pip install -r requirements.txt
-        playwright install --with-deps
+        playwright install --with-deps chromium
+        playwright install-deps chromium
 
-    - name: Verify Secrets Availability
+    - name: Verify MongoDB Connection
+      shell: bash -l {0}
       run: |
-        echo "Verifying secrets (without exposing sensitive data):"
-        echo "MONGO_HOST=${MONGO_HOST}"
-        echo "MONGO_PORT=${MONGO_PORT}"
-        echo "MONGO_DB=${MONGO_DB}"
-        echo "MONGO_USER=${MONGO_USER}"
-        echo "BASE_URL=${BASE_URL}"
+        echo "Waiting for MongoDB to be ready..."
+        timeout 60s bash -c '
+        until mongosh --eval "db.runCommand({ ping: 1 })" --quiet; do
+          echo "MongoDB not ready yet..."
+          sleep 2
+        done
+        '
+        echo "MongoDB is ready!"
 
     - name: Start Express server
+      working-directory: src
       run: |
         npm start &
         sleep 10
 
-    - name: Run tests
+    - name: Run Playwright tests
       shell: bash -l {0}
       run: |
         conda activate test-dragon
-        echo "Ejecutando pruebas en la carpeta tests/"
-        pytest src/tests/ -v
+        cd src
+        pytest tests/ -v --tb=short -s
