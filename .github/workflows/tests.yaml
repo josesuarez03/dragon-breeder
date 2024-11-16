@@ -27,19 +27,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Change directory to src
-      run: cd src
-
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
+      working-directory: src
+
 
     - name: Install Node dependencies
-      run: |
-        cd src
-        npm ci package.json
+      run: npm ci
+      working-directory: src
+
 
     - name: Set up Conda
       uses: conda-incubator/setup-miniconda@v3
@@ -51,6 +50,7 @@ jobs:
     - name: Install Python dependencies
       shell: bash -l {0}
       run: |
+        cd src
         conda activate test-dragon
         pip install -r requirements.txt
         playwright install --with-deps
