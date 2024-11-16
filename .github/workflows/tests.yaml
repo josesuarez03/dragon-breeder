@@ -14,9 +14,9 @@ jobs:
     env:
       SECRET_APP: ${{ secrets.SECRET_APP }}
       PYTHONPATH: ${{ github.workspace }}
-      MONGO_HOST: localhost
-      MONGO_PORT: 27017
-      MONGO_DB: DB
+      MONGO_HOST: ${{ secrets.MONGO_HOST }}
+      MONGO_PORT: ${{ secrets.MONGO_PORT }}
+      MONGO_DB: ${{ secrets.MONGO_DB }}
       MONGO_USER: ${{ secrets.MONGO_USER }}
       MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 
@@ -26,11 +26,11 @@ jobs:
         env:
           MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_USER }}
           MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
-          MONGO_INITDB_DATABASE: DB
+          MONGO_INITDB_DATABASE: ${{ secrets.MONGO_DB }}
         ports:
-          - 27017:27017
+          - ${{ secrets.MONGO_PORT }}:27017
         options: >-
-          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-cmd mongosh --eval "db.runCommand({ ping: 1 })"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -44,6 +44,13 @@ jobs:
         node-version: '20'
         cache: 'npm'
         cache-dependency-path: src/package-lock.json
+
+    - name: Install MongoDB Shell
+      run: |
+        curl -fsSL https://pgp.mongodb.com/server-6.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg --dearmor
+        echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+        sudo apt-get update
+        sudo apt-get install -y mongodb-mongosh
 
     - name: Install Node dependencies
       working-directory: src
@@ -70,7 +77,7 @@ jobs:
       run: |
         echo "Waiting for MongoDB to be ready..."
         timeout 60s bash -c '
-        until mongosh --eval "db.runCommand({ ping: 1 })" --quiet; do
+        until mongosh --host ${{ secrets.MONGO_HOST }} --port ${{ secrets.MONGO_PORT }} -u ${{ secrets.MONGO_USER }} -p ${{ secrets.MONGO_PASSWORD }} --eval "db.runCommand({ ping: 1 })" --quiet; do
           echo "MongoDB not ready yet..."
           sleep 2
         done
