@@ -1,0 +1,96 @@
+name: Test Playwright Pipeline
+
+on:
+  push:
+    branches: master 
+  pull_request:
+    branches: master 
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      MONGO_HOST: ${{ secrets.MONGO_HOST }}
+      MONGO_PORT: ${{ secrets.MONGO_PORT }}
+      MONGO_DB: ${{ secrets.MONGO_DB }}
+      MONGO_USER: ${{ secrets.MONGO_USER }}
+      MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+      BASE_URL: ${{ secrets.BASE_URL }}
+
+    services:
+      mongodb:
+        image: mongo:latest
+        env:
+          MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_USER }}
+          MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd mongosh --eval "db.adminCommand('ping')"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Debug Secrets Availability
+      run: |
+        echo "Checking if secrets are available..."
+        if [ -n "${{ secrets.MONGO_HOST }}" ]; then
+          echo "MONGO_HOST is set"
+        else
+          echo "MONGO_HOST is not set"
+        fi
+        # No imprimas los valores reales, solo verifica si están definidos
+        for var in MONGO_PORT MONGO_DB MONGO_USER BASE_URL; do
+          if [ -n "${{ secrets[var] }}" ]; then
+            echo "$var is set"
+          else
+            echo "$var is not set"
+          fi
+        done
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install Node dependencies
+      run: npm ci
+
+    - name: Set up Conda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-activate-base: false
+        python-version: '3.10'
+        activate-environment: test-dragon
+
+    - name: Install Python dependencies
+      shell: bash -l {0}
+      run: |
+        conda activate test-dragon
+        pip install -r requirements.txt
+        playwright install --with-deps
+
+    - name: Verify Secrets Availability
+      run: |
+        echo "Verifying secrets (without exposing sensitive data):"
+        echo "MONGO_HOST=${MONGO_HOST}"
+        echo "MONGO_PORT=${MONGO_PORT}"
+        echo "MONGO_DB=${MONGO_DB}"
+        echo "MONGO_USER=${MONGO_USER}"
+        echo "BASE_URL=${BASE_URL}"
+
+    - name: Start Express server
+      run: |
+        npm start &
+        sleep 10
+
+    - name: Run tests
+      shell: bash -l {0}
+      run: |
+        conda activate test-dragon
+        echo "Ejecutando pruebas en la carpeta tests/"
+        pytest tests/ -v
