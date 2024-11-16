@@ -35,7 +35,9 @@ jobs:
 
 
     - name: Install Node dependencies
-      run: npm ci
+      run: |
+        cd src  # Cambiar al directorio src
+        npm ci  # Ejecutar npm en el directorio src
       working-directory: src
 
 
