@@ -27,11 +27,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Debug Secrets Availability
-      run: |
-        echo "Checking if secrets are available..."
-        echo $SECRET_APP | base64 --decode > .env   # Decodifica el secreto y guarda las variables en un archivo .env
-
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
