@@ -30,10 +30,11 @@ jobs:
         ports:
           - 27017:27017
         options: >-
-          --health-cmd mongosh --eval "db.runCommand({ ping: 1 })"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd="mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+          --health-start-period=30s
 
     steps:
     - uses: actions/checkout@v4
@@ -77,7 +78,7 @@ jobs:
       run: |
         echo "Waiting for MongoDB to be ready..."
         timeout 60s bash -c '
-        until mongosh --host ${{ secrets.MONGO_HOST }} --port ${{ secrets.MONGO_PORT }} -u ${{ secrets.MONGO_USER }} -p ${{ secrets.MONGO_PASSWORD }} --eval "db.runCommand({ ping: 1 })" --quiet; do
+        until mongosh "mongodb://${{ secrets.MONGO_USER }}:${{ secrets.MONGO_PASSWORD }}@localhost:27017/${{ secrets.MONGO_DB }}?authSource=admin" --eval "db.runCommand({ ping: 1 })" --quiet; do
           echo "MongoDB not ready yet..."
           sleep 2
         done
