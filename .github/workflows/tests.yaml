@@ -23,7 +23,6 @@ jobs:
           MONGO_INITDB_DATABASE: DB
         ports:
           - 27017:27017
-        restart: always
 
     steps:
     - uses: actions/checkout@v4
