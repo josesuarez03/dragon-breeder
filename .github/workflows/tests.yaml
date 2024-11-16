@@ -12,7 +12,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      SECRET_APP: ${{ secrets.SECRET_APP }}  # Cargar el secreto completo
+      SECRET_APP: ${{ secrets.SECRET_APP }}
 
     services:
       mongodb:
@@ -27,18 +27,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-     - name: Set up Node.js
+    - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
-      # Usamos 'working-directory' para apuntar a la carpeta 'src' donde están los archivos de Node.js
-      working-directory: src
 
     - name: Install Node dependencies
-      run: npm ci
       working-directory: src
-
+      run: npm ci
 
     - name: Set up Conda
       uses: conda-incubator/setup-miniconda@v3
