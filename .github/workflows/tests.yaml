@@ -27,17 +27,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Node.js
+     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
-
+      # Usamos 'working-directory' para apuntar a la carpeta 'src' donde están los archivos de Node.js
+      working-directory: src
 
     - name: Install Node dependencies
-      run: |
-        cd src  # Cambiar al directorio src
-        npm ci  # Ejecutar npm en el directorio src
+      run: npm ci
       working-directory: src
 
 
