@@ -1,43 +1,87 @@
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
+import time
 
 def test_user_register():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
-        page = browser.new_page()
+        context = browser.new_context()
+        page = context.new_page()
 
-        # Navega a la pagina de register
-        page.goto("http://localhost:3000/register")
+        try:
+            # Navega a la página de register
+            page.goto("http://localhost:3000/register")
+            
+            # Esperar a que el formulario esté visible
+            page.wait_for_selector("#username")
 
-        # Llenar los campos del formulario
-        page.fill("#username", "testuser")  # Rellena el campo de usuario
-        page.fill("#email", "testuser@example.com")  # Rellena el campo de correo electrónico
-        page.fill("#password", "securepassword123")  # Rellena el campo de contraseña
+            # Llenar los campos del formulario
+            page.fill("#username", "testuser")
+            page.fill("#email", "testuser@example.com")
+            page.fill("#password", "securepassword123")
 
-        # Hacer clic en el botón de registro
-        page.click("button.btn-primary")  # Selecciona el botón usando su clase
+            # Hacer clic en el botón de registro
+            page.click("button.btn-primary")
 
-        # Verificar redirección (por ejemplo, a la página de inicio de sesión)
-        page.wait_for_url("http://localhost:3000/login")
+            # Verificar si redirige a cualquiera de las dos rutas posibles
+            try:
+                # Primero intentamos esperar la ruta /game
+                page.wait_for_url("http://localhost:3000/game", timeout=5000)
+                current_route = "game"
+            except:
+                try:
+                    # Si no es /game, esperamos que sea /box-egg
+                    page.wait_for_url("http://localhost:3000/box-egg", timeout=5000)
+                    current_route = "box-egg"
+                except:
+                    raise AssertionError("No se redirigió ni a /game ni a /box-egg")
 
-        # Opcional: Verificar que aparece un mensaje de éxito (si existe)
-        assert "Inicia sesión ahora" in page.text_content("body")
+            # Esperar a que la página se cargue completamente
+            page.wait_for_load_state("networkidle")
 
-        # Tomar una captura de pantalla para verificar el estado
-        page.screenshot(path="register_success.png")
-        browser.close()
+            # Verificar que estamos en una de las rutas esperadas
+            assert current_route in ["game", "box-egg"], f"La redirección a {current_route} no es válida"
+
+            # Verificar que existe la clase container
+            container_exists = page.locator(".container").count() > 0
+            assert container_exists, "No se encontró la clase .container en la página"
+
+            # Tomar una captura de pantalla del estado final
+            page.screenshot(path=f"register_to_{current_route}_success.png")
+
+            print(f"✓ Registro exitoso: Redirigido a /{current_route}")
+            print(f"✓ Clase .container encontrada en la página")
+
+        except Exception as e:
+            # Tomar una captura de pantalla en caso de error
+            page.screenshot(path="register_error.png")
+            raise e
+
+        finally:
+            context.close()
+            browser.close()
 
 def test_register_link_to_login():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
-        page = browser.new_page()
+        context = browser.new_context()
+        page = context.new_page()
 
-        # Navegar a la página de registro
-        page.goto("http://localhost:3000/register")
+        try:
+            # Navegar a la página de registro
+            page.goto("http://localhost:3000/register")
 
-        # Hacer clic en el enlace de inicio de sesión
-        page.click("a.register-link")  # Selecciona el enlace por su clase
+            # Esperar a que el enlace esté visible
+            page.wait_for_selector("a.register-link")
 
-        # Verificar redirección a la página de inicio de sesión
-        page.wait_for_url("http://localhost:3000/login")
+            # Hacer clic en el enlace de inicio de sesión
+            page.click("a.register-link")
 
-        browser.close()
+            # Esperar a que la navegación se complete
+            page.wait_for_url("http://localhost:3000/login", timeout=10000)
+            
+            # Esperar a que la página se cargue completamente
+            page.wait_for_load_state("networkidle")
+
+        finally:
+            context.close()
+            browser.close()
