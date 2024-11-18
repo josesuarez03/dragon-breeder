@@ -88,7 +88,7 @@ def test_register_link_to_login():
 
 def clean_test_user(mongo_client):
     try:
-        db = mongo_client.get_database("testdb")
+        db = mongo_client.get_database("dragon")
         
         # Primero obtenemos el _id del usuario para referencias
         users_collection = db.get_collection("users")
