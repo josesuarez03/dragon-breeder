@@ -39,7 +39,7 @@ def test_user_register():
             page.wait_for_load_state("networkidle")
 
             # Verificar que estamos en una de las rutas esperadas
-            assert current_route in ["game", "box-egg"], f"La redirección a {current_route} no es válida"
+            assert current_route in ["game", "box-eggs"], f"La redirección a {current_route} no es válida"
 
             # Verificar que existe la clase container
             container_exists = page.locator(".container").count() > 0
