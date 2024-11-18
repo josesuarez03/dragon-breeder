@@ -16,7 +16,7 @@ def test_user_login():
         page.click("button.btn-primary")  # Selecciona el botón por su clase
 
         # Tomar una captura de pantalla para verificar el estado
-        page.screenshot(path="login.png")
+        page.screenshot(path="tests/assets/login.png")
 
         # Cerrar el navegador
         browser.close()
