@@ -98,14 +98,6 @@ run-tests:
 	MONGO_TEST_PASSWORD=$(MONGO_TEST_PASSWORD) \
 	pytest -v $(TEST_DIR)/test_home.py
 	$(SLEEP)
-	@echo "${YELLOW}Ejecutando pruebas en el login${NC}"
-	MONGO_TEST_HOST=$(MONGO_TEST_HOST) \
-	MONGO_TEST_PORT=$(MONGO_TEST_PORT) \
-	MONGO_TEST_DB=$(MONGO_TEST_DB) \
-	MONGO_TEST_USER=$(MONGO_TEST_USER) \
-	MONGO_TEST_PASSWORD=$(MONGO_TEST_PASSWORD) \
-	pytest -v $(TEST_DIR)/test_login.py
-	$(SLEEP)
 	@echo "${YELLOW}Ejecutando pruebas en el registro${NC}"
 	MONGO_TEST_HOST=$(MONGO_TEST_HOST) \
 	MONGO_TEST_PORT=$(MONGO_TEST_PORT) \
@@ -113,6 +105,14 @@ run-tests:
 	MONGO_TEST_USER=$(MONGO_TEST_USER) \
 	MONGO_TEST_PASSWORD=$(MONGO_TEST_PASSWORD) \
 	pytest -v $(TEST_DIR)/test_register.py
+	$(SLEEP)
+	@echo "${YELLOW}Ejecutando pruebas en el login${NC}"
+	MONGO_TEST_HOST=$(MONGO_TEST_HOST) \
+	MONGO_TEST_PORT=$(MONGO_TEST_PORT) \
+	MONGO_TEST_DB=$(MONGO_TEST_DB) \
+	MONGO_TEST_USER=$(MONGO_TEST_USER) \
+	MONGO_TEST_PASSWORD=$(MONGO_TEST_PASSWORD) \
+	pytest -v $(TEST_DIR)/test_login.py
 	@echo "${GREEN}Pruebas completadas${NC}"
 
 # Servidor y MongoDB
