@@ -6,3 +6,5 @@ mongo
 !packages-lock.json
 .env
 *.zip
+__pycache__
+.pytest_cache
