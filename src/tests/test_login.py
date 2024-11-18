@@ -1,4 +1,6 @@
 from playwright.sync_api import sync_playwright
+from pymongo import MongoClient
+from utils.health_check import get_mongodb_uri
 
 def test_user_login():
     with sync_playwright() as p:
@@ -44,37 +46,35 @@ def test_navigation_links():
 
 def clean_test_user(mongo_client):
     try:
-        db = mongo_client.get_database("dragon")
+        # Obtener la URI de conexión desde la función compartida
+        uri = get_mongodb_uri()
+        client = MongoClient(uri)
+        db = client.get_database()  # Obtiene la base de datos predeterminada de la URI
         
-        # Primero obtenemos el _id del usuario para referencias
+        # Buscar y eliminar datos relacionados con el usuario 'testuser'
         users_collection = db.get_collection("users")
         test_user = users_collection.find_one({"username": "testuser"})
         
         if test_user:
             user_id = test_user["_id"]
             
-            # Limpiamos el usuario
-            users_collection.delete_one({"_id": user_id})
+            # Limpiar dependencias antes de eliminar el usuario
+            collections_to_clean = {
+                "sessions": {"userId": user_id},
+                "dragons": {"userId": user_id},
+                "gamestate": {"userId": user_id},
+            }
             
-            # Limpiamos la sesión
-            sessions_collection = db.get_collection("sessions")
-            sessions_collection.delete_many({"userId": user_id})
+            for collection_name, query in collections_to_clean.items():
+                result = db.get_collection(collection_name).delete_many(query)
+                print(f"  - {collection_name.capitalize()} eliminados: {result.deleted_count}")
             
-            # Limpiamos los dragones
-            dragons_collection = db.get_collection("dragons")
-            dragons_collection.delete_many({"userId": user_id})
-            
-            # Limpiamos el estado del juego
-            gamestate_collection = db.get_collection("gamestate")
-            gamestate_collection.delete_many({"userId": user_id})
-            
-            print("✓ Datos de prueba limpiados correctamente:")
-            print("  - Usuario eliminado")
-            print("  - Sesiones eliminadas")
-            print("  - Dragones eliminados")
-            print("  - Estado del juego eliminado")
+            # Eliminar el usuario al final
+            result = users_collection.delete_one({"_id": user_id})
+            print(f"  - Usuario eliminado: {result.deleted_count}")
         else:
-            print("ℹ No se encontró el usuario de prueba para limpiar")
-            
+            print("ℹ No se encontró el usuario de prueba.")
     except Exception as e:
         print(f"❌ Error al limpiar datos de prueba: {e}")
+    finally:
+        client.close()
