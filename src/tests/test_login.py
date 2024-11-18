@@ -42,6 +42,8 @@ def test_navigation_links():
         page.click("a.change-password-link")
         assert page.url == "http://localhost:3000/change-password"
 
+        clean_test_user()
+
         browser.close()
 
 def clean_test_user(mongo_client):
