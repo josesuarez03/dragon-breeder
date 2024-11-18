@@ -19,14 +19,6 @@ ifneq (,$(wildcard .env))
     export
 endif
 
-# Verificar variables requeridas
-check_defined = \
-    $(strip $(foreach 1,$1, \
-        $(call __check_defined,$1,$(strip $(value 2)))))
-__check_defined = \
-    $(if $(value $1),, \
-        $(error Variable $1 no está definida. Por favor, configure su archivo .env))
-
 .PHONY: install test server run docker-compose-up stop start clean setup-env install-deps mock-mongo help verify-env
 
 # Target por defecto
@@ -49,11 +41,26 @@ help:
 # Verificación de variables de entorno
 verify-env:
 	@echo "${YELLOW}Verificando variables de entorno...${NC}"
-	@$(call check_defined, MONGO_TEST_HOST, MongoDB host no definido)
-	@$(call check_defined, MONGO_TEST_PORT, MongoDB port no definido)
-	@$(call check_defined, MONGO_TEST_DB, MongoDB database no definido)
-	@$(call check_defined, MONGO_TEST_USER, MongoDB user no definido)
-	@$(call check_defined, MONGO_TEST_PASSWORD, MongoDB password no definido)
+	@if [ -z "$(MONGO_TEST_HOST)" ]; then \
+		echo "${RED}Error: MONGO_TEST_HOST no está definida${NC}"; \
+		exit 1; \
+	fi
+	@if [ -z "$(MONGO_TEST_PORT)" ]; then \
+		echo "${RED}Error: MONGO_TEST_PORT no está definida${NC}"; \
+		exit 1; \
+	fi
+	@if [ -z "$(MONGO_TEST_DB)" ]; then \
+		echo "${RED}Error: MONGO_TEST_DB no está definida${NC}"; \
+		exit 1; \
+	fi
+	@if [ -z "$(MONGO_TEST_USER)" ]; then \
+		echo "${RED}Error: MONGO_TEST_USER no está definida${NC}"; \
+		exit 1; \
+	fi
+	@if [ -z "$(MONGO_TEST_PASSWORD)" ]; then \
+		echo "${RED}Error: MONGO_TEST_PASSWORD no está definida${NC}"; \
+		exit 1; \
+	fi
 	@echo "${GREEN}Variables de entorno verificadas correctamente${NC}"
 
 # Configuración del ambiente
@@ -63,12 +70,16 @@ setup-env:
 	conda activate $(CONDA_ENV) || true
 	@echo "${GREEN}Ambiente configurado correctamente${NC}"
 
+activate-conda:
+	@echo "${YELLOW}Activando ambiente de desarrollo...${NC}"
+	conda activate $(CONDA_ENV) || true
+	@echo "${GREEN}Ambiente activado correctamente${NC}"
+
 # Instalación de dependencias
 install: setup-env
 	@echo "${YELLOW}Instalando dependencias de Node.js...${NC}"
 	$(NPM) install
 	@echo "${YELLOW}Instalando dependencias de Python...${NC}"
-	$(PIP) install pytest playwright pymongo mongomock python-dotenv
 	$(PIP) install -r requirements.txt
 	playwright install --with-deps chromium
 	@echo "${GREEN}Todas las dependencias instaladas correctamente${NC}"
