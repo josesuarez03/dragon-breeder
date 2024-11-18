@@ -46,7 +46,7 @@ def test_navigation_links():
 
         browser.close()
 
-def clean_test_user(mongo_client):
+def clean_test_user():
     try:
         # Obtener la URI de conexión desde la función compartida
         uri = get_mongodb_uri()
