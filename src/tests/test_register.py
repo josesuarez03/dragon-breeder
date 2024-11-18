@@ -85,3 +85,15 @@ def test_register_link_to_login():
         finally:
             context.close()
             browser.close()
+
+def clean_test_user(mongo_client):
+    """
+    Función auxiliar para limpiar el usuario de prueba de la base de datos
+    """
+    try:
+        db = mongo_client.get_database("testdb")
+        users_collection = db.get_collection("users")
+        users_collection.delete_one({"username": "testuser"})
+        print("✓ Usuario de prueba limpiado correctamente")
+    except Exception as e:
+        print(f"Error al limpiar usuario de prueba: {e}")
