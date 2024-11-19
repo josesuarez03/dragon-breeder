@@ -37,6 +37,7 @@ help:
 	@echo "  ${GREEN}make mock-mongo${NC}      - Inicia MongoDB Mock"
 	@echo "  ${GREEN}make setup-env${NC}       - Configura el ambiente de desarrollo"
 	@echo "  ${GREEN}make verify-env${NC}      - Verifica variables de entorno"
+	@echo "  ${GREEN}make activate-conda${NC}  - Iniciar el ambiente de desarrollo de conda"
 
 # Verificación de variables de entorno
 verify-env:
