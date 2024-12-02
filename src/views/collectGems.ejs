@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JH6NCBXRDB"></script>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="js/gemSocket.js"></script>
+    <title>Dragon Gem Collector</title>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-JH6NCBXRDB');
+    </script>
+    <style>
+        #game-overlay {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 1000;
+        }
+        #game-score, #game-timer {
+            font-size: 1.2em;
+            margin: 5px 0;
+        }
+        #back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            padding: 12px 24px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #back-button:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.05);
+        }
+        #back-button svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+    <a href="/game" id="back-button">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+        Volver al Inicio
+    </a>
+
+    <div id="game-overlay">
+        <div id="game-score">Score: 0</div>
+        <div id="game-timer">Time: 30s</div>
+    </div>
+    
+    <a-scene>
+        <!-- Camera/Dragon Player with boundary controls -->
+        <a-entity id="rig" position="0 1 0" boundary-controls="width: 50; depth: 50; margin: 1">
+            <a-entity id="player-camera" camera look-controls wasd-controls="acceleration: 100">
+                <a-entity 
+                    id="dragon-head" 
+                    position="0 -0.5 -1" 
+                    geometry="primitive: box; width: 0.2; height: 0.2; depth: 0.3" 
+                    material="color: red"
+                    collision-detector>
+                </a-entity>
+            </a-entity>
+        </a-entity>
+
+        <!-- Gemas (serán generadas dinámicamente) -->
+        <a-entity id="gems"></a-entity>
+    
+        <!-- Terreno con límites visibles -->
+        <a-plane rotation="-90 0 0" width="50" height="50" color="#7BC8A4"></a-plane>
+        <a-box position="25 0.5 0" scale="0.1 1 50" color="#4a6b50" opacity="0.5"></a-box>
+        <a-box position="-25 0.5 0" scale="0.1 1 50" color="#4a6b50" opacity="0.5"></a-box>
+        <a-box position="0 0.5 25" scale="50 1 0.1" color="#4a6b50" opacity="0.5"></a-box>
+        <a-box position="0 0.5 -25" scale="50 1 0.1" color="#4a6b50" opacity="0.5"></a-box>
+
+        <!-- Iluminación -->
+        <a-light type="ambient" color="#FFF" intensity="0.5"></a-light>
+        <a-light type="directional" color="#FFF" intensity="1" position="-1 1 1"></a-light>
+
+        <!-- Sky -->
+        <a-sky color="#ECECEC"></a-sky>
+    </a-scene>
+
+    <script>
+        // Componente para los límites del terreno
+        AFRAME.registerComponent('boundary-controls', {
+            schema: {
+                width: { type: 'number', default: 50 },
+                depth: { type: 'number', default: 50 },
+                margin: { type: 'number', default: 1 }
+            },
+
+            init: function() {
+                this.originalPos = this.el.getAttribute('position');
+                
+                this.el.addEventListener('componentchanged', (evt) => {
+                    if (evt.detail.name === 'position') {
+                        this.constrainPosition();
+                    }
+                });
+            },
+
+            constrainPosition: function() {
+                const currentPos = this.el.getAttribute('position');
+                const halfWidth = (this.data.width / 2) - this.data.margin;
+                const halfDepth = (this.data.depth / 2) - this.data.margin;
+
+                // Constrain X position
+                if (currentPos.x > halfWidth) {
+                    currentPos.x = halfWidth;
+                } else if (currentPos.x < -halfWidth) {
+                    currentPos.x = -halfWidth;
+                }
+
+                // Constrain Z position
+                if (currentPos.z > halfDepth) {
+                    currentPos.z = halfDepth;
+                } else if (currentPos.z < -halfDepth) {
+                    currentPos.z = -halfDepth;
+                }
+
+                // Update position if it was constrained
+                this.el.setAttribute('position', currentPos);
+            }
+        });
+
+        // Componente para detectar colisiones
+        AFRAME.registerComponent('collision-detector', {
+            init: function () {
+                this.el.addEventListener('collide', function (e) {
+                    const gemElement = e.detail.body.el;
+                    if (gemElement && gemElement.getAttribute('gems')) {
+                        const gemId = gemElement.getAttribute('gems');
+                        window.collectGem(gemId);
+                    }
+                });
+            }
+        });
+
+        // Añadir confirmación antes de salir
+        document.getElementById('back-button').addEventListener('click', function(e) {
+            if (document.getElementById('game-score').textContent !== 'Score: 0') {
+                if (!confirm('¿Estás seguro que deseas salir? Perderás tu progreso actual.')) {
+                    e.preventDefault();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
