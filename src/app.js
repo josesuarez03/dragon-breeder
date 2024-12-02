@@ -15,11 +15,14 @@ const User = require('./models/usersModel');
 const { addAuthToLocals } = require('./middleware/authMiddleware');
 const http = require('http');
 const { Server } = require('socket.io');
-const socketController = require('./controllers/socketController');
+const SocketController = require('./controllers/socketController');
 
 const app = express();
-const server = http.createServer(app); // Crear servidor HTTP para socket.io
-const io = new Server(server); // Crear instancia de Socket.io
+const server = http.createServer(app);
+const io = new Server(server);
+
+// Initialize socket controller
+const socketController = new SocketController(io);
 
 app.use(logger('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -78,12 +81,10 @@ app.post('/game/select', (req, res) => {
     res.redirect('/game');
 });
 
-// Manejar errores 404 (página no encontrada) - Colocado después de las rutas
+// Manejar errores 404 (página no encontrada)
 app.use((req, res, next) => {
     res.status(404).sendFile(path.join(__dirname, 'public/html', '404.html'));
 });
-
-socketController.onConnection(io);
 
 const initializeCollections = async () => {
   await gameModel.initGameStateCollection();
@@ -106,7 +107,7 @@ const startServer = async () => {
     const PORT = process.env.PORT || 3000;
     server.listen(PORT, () => {
       console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
-      setInterval(socketController.decrementDragonAttributes, 10000); 
+      setInterval(() => socketController.decrementDragonAttributes(), 10000);
     });
   } catch (err) {
     console.error('Failed to start the server:', err);

@@ -318,5 +318,3 @@ exports.selectDragon = (req, res) => {
 
     res.redirect('/game');
 };
-
-

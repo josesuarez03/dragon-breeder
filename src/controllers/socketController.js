@@ -1,200 +1,360 @@
-const { findUserById, getOnlineUsersWithPositions, updateUser} = require('../models/usersModel');
+const { findUserById, getOnlineUsersWithPositions, updateUser } = require('../models/usersModel');
 const characterModel = require('../models/characterModel');
+const { Gem, GameState } = require('../models/dbModel');
 
-// Mapa para mantener múltiples sockets por usuario
-const userSockets = new Map(); // userId -> Set of sockets
-const activeUsers = new Map(); // userId -> user data
+class SocketController {
+  constructor(io) {
+    this.io = io;
+    this.connectedUsers = new Map(); // userId -> { sockets: Set, userData: Object }
+    this.gameRooms = new Map(); // roomId -> { players: Set, gems: Map, scores: Map, timeLeft: number, isActive: boolean }
+    this.setupSocketHandlers();
+  }
 
-const onConnection = (io) => {
-  io.on('connection', async (socket) => {
-    console.log('Nueva conexión:', socket.id);
+  setupSocketHandlers() {
+    this.io.on('connection', (socket) => {
+      console.log('Nueva conexión:', socket.id);
 
-    socket.on('user-connected', async (userData) => {
-      try {
-        const { userId } = userData;
-        
-        if (!userId) {
-          socket.emit('error', { message: 'No user ID provided' });
-          return;
-        }
+      socket.on('user-connected', (userData) => this.handleUserConnected(socket, userData));
+      socket.on('position-update', (data) => this.handlePositionUpdate(socket, data));
+      socket.on('dragon-update', (data) => this.handleDragonUpdate(socket, data));
+      socket.on('startGame', (data) => this.handleStartGame(socket, data));
+      socket.on('collectGem', (data) => this.handleCollectGem(socket, data));
+      socket.on('gemSpawned', (data) => this.handleGemSpawned(socket, data));
+      socket.on('disconnect', () => this.handleDisconnect(socket));
+    });
+  }
 
-        const user = await findUserById(userId);
-        if (!user) {
-          socket.emit('error', { message: 'User not found' });
-          return;
-        }
-
-        // Crear una sala única para el usuario
-        const userRoom = `user_${userId}`;
-        socket.join(userRoom);
-
-        // Almacenar información del socket
-        socket.userId = userId;
-
-        // Inicializar o actualizar el Set de sockets para este usuario
-        if (!userSockets.has(userId)) {
-          userSockets.set(userId, new Set());
-        }
-        userSockets.get(userId).add(socket);
-
-        // Actualizar o inicializar datos del usuario activo
-        if (!activeUsers.has(userId)) {
-          activeUsers.set(userId, {
-            lastActive: Date.now(),
-            position: {
-              x: 400,
-              y: 400
-            }
-          });
-        }
-
-        // Obtener dragones específicos del usuario
-        const userDragons = await characterModel.getUserDragons(userId);
-        
-        // Emitir datos de inicialización específicos del usuario
-        socket.emit('initialization', {
-          userId,
-          dragons: userDragons,
-          position: activeUsers.get(userId).position
-        });
-
-        // Emitir lista actualizada de usuarios activos a todos
-        const onlineUsers = Array.from(activeUsers.keys()).map(id => ({
-          userId: id,
-          position: activeUsers.get(id).position
-        }));
-        
-        io.emit('users-online-update', onlineUsers);
-
-        // Actualizar estado en la base de datos
-        await updateUser(userId, {
-          isOnline: true,
-          lastActive: new Date(),
-          position: activeUsers.get(userId).position
-        });
-
-        // Log para depuración
-        console.log(`Usuario ${userId} conectado. Sockets activos: ${userSockets.get(userId).size}`);
-
-      } catch (error) {
-        console.error('Error en conexión de usuario:', error);
-        socket.emit('error', { message: 'Error connecting user' });
+  async handleUserConnected(socket, userData) {
+    try {
+      const { userId } = userData;
+      
+      if (!userId) {
+        socket.emit('error', { message: 'No user ID provided' });
+        return;
       }
+
+      const user = await findUserById(userId);
+      if (!user) {
+        socket.emit('error', { message: 'User not found' });
+        return;
+      }
+
+      // Initialize or update connected user data
+      if (!this.connectedUsers.has(userId)) {
+        this.connectedUsers.set(userId, {
+          sockets: new Set(),
+          userData: {
+            lastActive: Date.now(),
+            position: { x: 400, y: 400 },
+            dragons: await characterModel.getUserDragons(userId)
+          }
+        });
+      }
+
+      const userConnection = this.connectedUsers.get(userId);
+      userConnection.sockets.add(socket);
+      socket.userId = userId;
+
+      // Join user's personal room
+      const userRoom = `user_${userId}`;
+      socket.join(userRoom);
+
+      // Send initialization data
+      socket.emit('initialization', {
+        userId,
+        dragons: userConnection.userData.dragons,
+        position: userConnection.userData.position,
+        onlineUsers: Array.from(this.connectedUsers.entries()).map(([id, data]) => ({
+          userId: id,
+          position: data.userData.position
+        }))
+      });
+
+      socket.broadcast.emit('user-joined', {
+        userId,
+        position: userConnection.userData.position
+      });
+
+      await updateUser(userId, {
+        isOnline: true,
+        lastActive: new Date(),
+        position: userConnection.userData.position
+      });
+
+      console.log(`Usuario ${userId} conectado. Conexiones activas: ${userConnection.sockets.size}`);
+
+    } catch (error) {
+      console.error('Error en conexión de usuario:', error);
+      socket.emit('error', { message: 'Error connecting user' });
+    }
+  }
+
+  async handlePositionUpdate(socket, data) {
+    try {
+      const { position } = data;
+      const userId = socket.userId;
+
+      if (!userId || !this.connectedUsers.has(userId)) return;
+
+      const userConnection = this.connectedUsers.get(userId);
+      userConnection.userData.position = position;
+
+      socket.broadcast.emit('character-position-update', {
+        userId,
+        position,
+        timestamp: Date.now()
+      });
+
+      await updateUser(userId, {
+        position,
+        lastActive: new Date()
+      });
+
+    } catch (error) {
+      console.error('Error actualizando posición:', error);
+    }
+  }
+
+  async handleDragonUpdate(socket, data) {
+    try {
+      const userId = socket.userId;
+      if (!userId || !this.connectedUsers.has(userId)) return;
+
+      const userConnection = this.connectedUsers.get(userId);
+      userConnection.userData.dragons = await characterModel.getUserDragons(userId);
+
+      userConnection.sockets.forEach(userSocket => {
+        if (userSocket.id !== socket.id) {
+          userSocket.emit('dragon-update', data);
+        }
+      });
+
+    } catch (error) {
+      console.error('Error en actualización de dragón:', error);
+    }
+  }
+
+  async handleStartGame(socket, data) {
+    try {
+      const { userId, roomId, gameId } = data;
+      
+      // Verify active game state
+      const gameState = await GameState.findOne({ user: userId, timeLeft: { $gt: 0 } });
+      if (!gameState) return;
+
+      // Create or join game room
+      if (!this.gameRooms.has(roomId)) {
+        this.gameRooms.set(roomId, {
+          players: new Set([userId]),
+          gems: new Map(),
+          scores: new Map(),
+          timeLeft: 30,
+          isActive: true
+        });
+      } else {
+        this.gameRooms.get(roomId).players.add(userId);
+      }
+
+      socket.join(`game_${roomId}`);
+
+      // Initialize game state
+      const roomState = this.gameRooms.get(roomId);
+      const gems = await Gem.find({ roomId, collected: false });
+      
+      gems.forEach(gem => {
+        roomState.gems.set(gem._id.toString(), {
+          position: gem.position,
+          collectedBy: null
+        });
+      });
+
+      this.io.to(`game_${roomId}`).emit('gameInit', {
+        gameId,
+        gems: Array.from(roomState.gems.entries()),
+        players: Array.from(roomState.players),
+        timeLeft: roomState.timeLeft
+      });
+
+      if (roomState.players.size === 1) {
+        this.startGameTimer(roomId);
+      }
+
+    } catch (error) {
+      console.error('Error iniciando juego:', error);
+      socket.emit('error', { message: 'Error starting game' });
+    }
+  }
+
+  async handleCollectGem(socket, data) {
+    try {
+      const { gemId, roomId } = data;
+      const roomState = this.gameRooms.get(roomId);
+      
+      if (!roomState || !roomState.isActive || !roomState.gems.has(gemId)) return;
+      
+      const gem = roomState.gems.get(gemId);
+      if (gem.collectedBy) return;
+
+      // Update gem state
+      gem.collectedBy = socket.userId;
+      const currentScore = roomState.scores.get(socket.userId) || 0;
+      roomState.scores.set(socket.userId, currentScore + 100);
+
+      // Update database
+      await Gem.findByIdAndUpdate(gemId, {
+        collected: true,
+        collectedBy: socket.userId
+      });
+
+      // Notify all players
+      this.io.to(`game_${roomId}`).emit('gemCollected', {
+        gemId,
+        collectedBy: socket.userId,
+        newScore: roomState.scores.get(socket.userId)
+      });
+
+    } catch (error) {
+      console.error('Error recolectando gema:', error);
+    }
+  }
+
+  handleGemSpawned(socket, data) {
+    const { gemId, position, roomId } = data;
+    const roomState = this.gameRooms.get(roomId);
+    
+    if (!roomState || !roomState.isActive) return;
+
+    roomState.gems.set(gemId, {
+      position,
+      collectedBy: null
     });
 
-    socket.on('position-update', async (data) => {
-      try {
-        const { position } = data;
-        const userId = socket.userId;
+    socket.to(`game_${roomId}`).emit('gemSpawned', {
+      gemId,
+      position
+    });
+  }
 
-        if (!userId || !userSockets.has(userId)) {
-          return;
-        }
+  async handleDisconnect(socket) {
+    try {
+      const userId = socket.userId;
+      if (!userId || !this.connectedUsers.has(userId)) return;
 
-        // Actualizar posición en memoria
-        if (activeUsers.has(userId)) {
-          activeUsers.get(userId).position = position;
-        }
+      const userConnection = this.connectedUsers.get(userId);
+      userConnection.sockets.delete(socket);
 
-        // Emitir actualización a todos los demás sockets excepto al emisor
-        socket.broadcast.emit('character-position-update', {
-          userId,
-          position,
-          timestamp: Date.now()
-        });
+      if (userConnection.sockets.size === 0) {
+        this.connectedUsers.delete(userId);
+        socket.broadcast.emit('user-left', userId);
 
-        // Actualizar en base de datos
         await updateUser(userId, {
-          position: position,
+          isOnline: false,
           lastActive: new Date()
         });
 
-      } catch (error) {
-        console.error('Error actualizando posición:', error);
-      }
-    });
-
-    socket.on('disconnect', async () => {
-      try {
-        const userId = socket.userId;
-        if (!userId) return;
-
-        const userSocketSet = userSockets.get(userId);
-        if (userSocketSet) {
-          userSocketSet.delete(socket);
-
-          // Solo eliminar datos del usuario si no quedan sockets activos
-          if (userSocketSet.size === 0) {
-            userSockets.delete(userId);
-            activeUsers.delete(userId);
-
-            // Actualizar estado en base de datos
-            await updateUser(userId, {
-              isOnline: false,
-              lastActive: new Date()
-            });
-
-            // Notificar a otros usuarios
-            socket.broadcast.emit('user-disconnected', userId);
-          }
-
-          // Log para depuración
-          console.log(`Socket desconectado para usuario ${userId}. Sockets restantes: ${userSocketSet.size}`);
-        }
-
-        socket.leave(`user_${userId}`);
-      } catch (error) {
-        console.error('Error en desconexión:', error);
-      }
-    });
-
-    // Manejar actualizaciones de dragones
-    socket.on('dragon-update', async (data) => {
-      try {
-        const userId = socket.userId;
-        if (!userId || !userSockets.has(userId)) return;
-
-        const userSocketSet = userSockets.get(userId);
-        // Emitir la actualización a todos los sockets del mismo usuario
-        userSocketSet.forEach(userSocket => {
-          if (userSocket.id !== socket.id) {
-            userSocket.emit('dragon-update', data);
-          }
-        });
-      } catch (error) {
-        console.error('Error en actualización de dragón:', error);
-      }
-    });
-  });
-};
-
-const decrementDragonAttributes = async (io) => {
-  try {
-    const updatedDragons = await characterModel.decrementDragonAttributes();
-    
-    for (const dragon of updatedDragons) {
-      if (dragon.userId && userSockets.has(dragon.userId)) {
-        const userSocketSet = userSockets.get(dragon.userId);
-        
-        // Emitir actualización a todos los sockets del usuario
-        userSocketSet.forEach(socket => {
-          socket.emit('dragon-update', {
-            dragon: {
-              _id: dragon._id,
-              name: dragon.name,
-              hungry: dragon.hungry,
-              energy: dragon.energy,
-              health: dragon.health,
-              availableForBattle: dragon.availableForBattle,
-              stage: dragon.stage
+        // Remove from game rooms
+        for (const [roomId, roomState] of this.gameRooms.entries()) {
+          if (roomState.players.has(userId)) {
+            roomState.players.delete(userId);
+            if (roomState.players.size === 0) {
+              this.gameRooms.delete(roomId);
+            } else {
+              this.io.to(`game_${roomId}`).emit('playerLeft', { 
+                userId,
+                remainingPlayers: Array.from(roomState.players)
+              });
             }
-          });
-        });
+          }
+        }
       }
-    }
-  } catch (error) {
-    console.error('Error decrementando atributos:', error);
-  }
-};
 
-module.exports = { onConnection, decrementDragonAttributes };
+      socket.leave(`user_${userId}`);
+      console.log(`Usuario ${userId} desconectado. Conexiones restantes: ${userConnection.sockets.size}`);
+
+    } catch (error) {
+      console.error('Error en desconexión:', error);
+    }
+  }
+
+  startGameTimer(roomId) {
+    const roomState = this.gameRooms.get(roomId);
+    if (!roomState) return;
+
+    const timer = setInterval(() => {
+      roomState.timeLeft--;
+      
+      this.io.to(`game_${roomId}`).emit('timerUpdate', {
+        timeLeft: roomState.timeLeft
+      });
+
+      if (roomState.timeLeft <= 0) {
+        clearInterval(timer);
+        this.endGame(roomId);
+      }
+    }, 1000);
+  }
+
+  async endGame(roomId) {
+    const roomState = this.gameRooms.get(roomId);
+    if (!roomState) return;
+
+    roomState.isActive = false;
+
+    // Prepare final results
+    const results = {
+      scores: Array.from(roomState.scores.entries()).map(([userId, score]) => ({
+        userId,
+        score
+      })),
+      totalGems: roomState.gems.size,
+      collectedGems: Array.from(roomState.gems.values()).filter(gem => gem.collectedBy).length
+    };
+
+    // Notify all players
+    this.io.to(`game_${roomId}`).emit('gameOver', results);
+
+    // Update game state in database
+    try {
+      await GameState.updateMany(
+        { roomId },
+        { 
+          isActive: false,
+          finalScores: results.scores
+        }
+      );
+    } catch (error) {
+      console.error('Error updating game state:', error);
+    }
+  }
+
+  async decrementDragonAttributes() {
+    try {
+      const updatedDragons = await characterModel.decrementDragonAttributes();
+      
+      for (const dragon of updatedDragons) {
+        if (dragon.userId && this.connectedUsers.has(dragon.userId)) {
+          const userConnection = this.connectedUsers.get(dragon.userId);
+          userConnection.userData.dragons = await characterModel.getUserDragons(dragon.userId);
+          
+          userConnection.sockets.forEach(socket => {
+            socket.emit('dragon-update', {
+              dragon: {
+                _id: dragon._id,
+                name: dragon.name,
+                hungry: dragon.hungry,
+                energy: dragon.energy,
+                health: dragon.health,
+                availableForBattle: dragon.availableForBattle,
+                stage: dragon.stage
+              }
+            });
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error decrementando atributos:', error);
+    }
+  }
+}
+
+module.exports = SocketController;
