@@ -4,7 +4,6 @@ const gameController = require('../controllers/gameController');
 const characterController = require('../controllers/characterController')
 const {isAdmin, isAuthenticated, checkSession} = require('../middleware/authMiddleware');
 const userController = require('../controllers/usersController');
-const miniGameController = require('../controllers/miniGameController')
 
 // Ruta principal - página de inicio
 router.get('/', gameController.startGame);
@@ -63,10 +62,8 @@ router.get('/admin/dashboard',isAuthenticated, isAdmin, userController.dashboard
 router.post('/admin/users/:id/edit',isAuthenticated, isAdmin, userController.edit);   // Editar usuario
 router.post('/admin/users/:id/delete',isAuthenticated, isAdmin, userController.delete); // Eliminar usuario
 
-router.get('/minigame', isAuthenticated, miniGameController.renderMiniGame);
-router.post('/minigame/start', isAuthenticated, miniGameController.startMiniGame);
-router.put('/minigame/update', isAuthenticated, miniGameController.updateGameState);
-router.post('/minigame/end', isAuthenticated, miniGameController.endMiniGame);
-
+router.get('/minigame', isAuthenticated, (req, res) => {
+    res.render('collectGems'); 
+});
 
 module.exports = router;
