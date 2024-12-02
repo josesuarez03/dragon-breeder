@@ -3,17 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JH6NCBXRDB"></script>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script type="module" src="js/gemSocket.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <title>Dragon Gem Collector</title>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-JH6NCBXRDB');
-    </script>
     <style>
         #game-overlay {
             position: fixed;
@@ -29,40 +23,45 @@
             font-size: 1.2em;
             margin: 5px 0;
         }
-        #back-button {
+        #start-game-overlay {
             position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-            padding: 12px 24px;
-            background: rgba(0, 0, 0, 0.7);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        #start-button {
+            padding: 20px 40px;
+            font-size: 1.5em;
+            background-color: #4CAF50;
             color: white;
-            border: 2px solid #fff;
+            border: none;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 1.1em;
             transition: all 0.3s ease;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
-        #back-button:hover {
-            background: rgba(0, 0, 0, 0.9);
+        #start-button:hover {
+            background-color: #45a049;
             transform: scale(1.05);
         }
-        #back-button svg {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
-        }
+        #back-button i {
+            margin-right: 8px;
+            font-size: 1.2em;
+}
     </style>
 </head>
 <body>
+    <div id="start-game-overlay">
+        <button id="start-button">Iniciar Juego</button>
+    </div>
+
     <a href="/game" id="back-button">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-        </svg>
+        <i class="bi bi-arrow-left"></i>
         Volver al Inicio
     </a>
 
@@ -71,15 +70,23 @@
         <div id="game-timer">Time: 30s</div>
     </div>
     
-    <a-scene>
-        <!-- Camera/Dragon Player with boundary controls -->
-        <a-entity id="rig" position="0 1 0" boundary-controls="width: 50; depth: 50; margin: 1">
-            <a-entity id="player-camera" camera look-controls wasd-controls="acceleration: 100">
+    <a-scene physics="debug: false" custom-movement-controls>
+        <!-- Camera/Dragon Player with boundary controls and physics -->
+        <a-entity id="rig" 
+            position="0 1.6 0" 
+            custom-movement-controls 
+            kinematic-body 
+            boundary-controls="width: 50; depth: 50; margin: 1">
+            <a-entity id="player-camera" 
+                      camera 
+                      look-controls 
+                      position="0 0 0">
                 <a-entity 
                     id="dragon-head" 
                     position="0 -0.5 -1" 
                     geometry="primitive: box; width: 0.2; height: 0.2; depth: 0.3" 
                     material="color: red"
+                    dynamic-body
                     collision-detector>
                 </a-entity>
             </a-entity>
@@ -89,11 +96,19 @@
         <a-entity id="gems"></a-entity>
     
         <!-- Terreno con límites visibles -->
-        <a-plane rotation="-90 0 0" width="50" height="50" color="#7BC8A4"></a-plane>
-        <a-box position="25 0.5 0" scale="0.1 1 50" color="#4a6b50" opacity="0.5"></a-box>
-        <a-box position="-25 0.5 0" scale="0.1 1 50" color="#4a6b50" opacity="0.5"></a-box>
-        <a-box position="0 0.5 25" scale="50 1 0.1" color="#4a6b50" opacity="0.5"></a-box>
-        <a-box position="0 0.5 -25" scale="50 1 0.1" color="#4a6b50" opacity="0.5"></a-box>
+        <a-plane 
+            static-body 
+            rotation="-90 0 0" 
+            width="50" 
+            height="50" 
+            color="#7BC8A4">
+        </a-plane>
+        
+        <!-- Límites del terreno -->
+        <a-box position="25 0.5 0" scale="0.1 1 50" color="#4a6b50" opacity="0.5" static-body></a-box>
+        <a-box position="-25 0.5 0" scale="0.1 1 50" color="#4a6b50" opacity="0.5" static-body></a-box>
+        <a-box position="0 0.5 25" scale="50 1 0.1" color="#4a6b50" opacity="0.5" static-body></a-box>
+        <a-box position="0 0.5 -25" scale="50 1 0.1" color="#4a6b50" opacity="0.5" static-body></a-box>
 
         <!-- Iluminación -->
         <a-light type="ambient" color="#FFF" intensity="0.5"></a-light>
@@ -103,15 +118,27 @@
         <a-sky color="#ECECEC"></a-sky>
     </a-scene>
 
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-physics-system@1.4.0/dist/aframe-physics-system.min.js"></script>
+    <script src="https://unpkg.com/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
     <script>
-        // Componente para los límites del terreno
+        // Enable movement controls from aframe-extras
+        AFRAME.registerComponent('custom-movement-controls', {
+            init: function() {
+                const el = this.el;
+                el.setAttribute('movement-controls', 'speed: 5; fly: false');
+                el.setAttribute('kinematic-body', 'radius: 0.5');
+            }
+        });
+    
+        // Boundary Controls Component
         AFRAME.registerComponent('boundary-controls', {
             schema: {
                 width: { type: 'number', default: 50 },
                 depth: { type: 'number', default: 50 },
                 margin: { type: 'number', default: 1 }
             },
-
+    
             init: function() {
                 this.originalPos = this.el.getAttribute('position');
                 
@@ -121,51 +148,113 @@
                     }
                 });
             },
-
+    
             constrainPosition: function() {
                 const currentPos = this.el.getAttribute('position');
                 const halfWidth = (this.data.width / 2) - this.data.margin;
                 const halfDepth = (this.data.depth / 2) - this.data.margin;
-
+    
                 // Constrain X position
                 if (currentPos.x > halfWidth) {
                     currentPos.x = halfWidth;
                 } else if (currentPos.x < -halfWidth) {
                     currentPos.x = -halfWidth;
                 }
-
+    
                 // Constrain Z position
                 if (currentPos.z > halfDepth) {
                     currentPos.z = halfDepth;
                 } else if (currentPos.z < -halfDepth) {
                     currentPos.z = -halfDepth;
                 }
-
+    
                 // Update position if it was constrained
                 this.el.setAttribute('position', currentPos);
             }
         });
-
-        // Componente para detectar colisiones
+    
+        // Collision Detector Component
         AFRAME.registerComponent('collision-detector', {
             init: function () {
                 this.el.addEventListener('collide', function (e) {
                     const gemElement = e.detail.body.el;
+                    const scoreElement = document.getElementById('game-score');
+                    
                     if (gemElement && gemElement.getAttribute('gems')) {
-                        const gemId = gemElement.getAttribute('gems');
-                        window.collectGem(gemId);
+                        const points = parseInt(gemElement.getAttribute('gems'));
+                        
+                        // Update score
+                        const currentScore = parseInt(scoreElement.textContent.split(': ')[1]);
+                        scoreElement.textContent = `Score: ${currentScore + points}`;
+                        
+                        // Remove gem
+                        gemElement.parentNode.removeChild(gemElement);
                     }
                 });
             }
         });
-
-        // Añadir confirmación antes de salir
-        document.getElementById('back-button').addEventListener('click', function(e) {
-            if (document.getElementById('game-score').textContent !== 'Score: 0') {
-                if (!confirm('¿Estás seguro que deseas salir? Perderás tu progreso actual.')) {
-                    e.preventDefault();
+    
+        // Game Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const startGameOverlay = document.getElementById('start-game-overlay');
+            const startButton = document.getElementById('start-button');
+            const gameTimer = document.getElementById('game-timer');
+            const gemsContainer = document.getElementById('gems');
+            let timeLeft = 30;
+            let timerInterval;
+    
+            // Gem generation function
+            function generateGems() {
+                const gemTypes = [
+                    { color: 'blue', points: 10 },
+                    { color: 'green', points: 15 }
+                ];
+    
+                for (let i = 0; i < 2; i++) {
+                    const gem = document.createElement('a-sphere');
+                    const gemType = gemTypes[i];
+                    const x = Math.random() * 40 - 20; // Random x between -20 and 20
+                    const z = Math.random() * 40 - 20; // Random z between -20 and 20
+    
+                    gem.setAttribute('position', `${x} 0.5 ${z}`);
+                    gem.setAttribute('radius', '0.5');
+                    gem.setAttribute('color', gemType.color);
+                    gem.setAttribute('gems', gemType.points);
+                    gem.setAttribute('dynamic-body', '');
+                    gem.setAttribute('class', 'collectible');
+    
+                    gemsContainer.appendChild(gem);
                 }
             }
+    
+            // Timer function
+            function startTimer() {
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    gameTimer.textContent = `Time: ${timeLeft}s`;
+    
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        alert(`Juego Terminado. Puntuación: ${document.getElementById('game-score').textContent.split(': ')[1]}`);
+                    }
+                }, 1000);
+            }
+    
+            // Start Game
+            startButton.addEventListener('click', () => {
+                startGameOverlay.style.display = 'none';
+                generateGems();
+                startTimer();
+            });
+    
+            // Back button confirmation
+            document.getElementById('back-button').addEventListener('click', function(e) {
+                if (document.getElementById('game-score').textContent !== 'Score: 0') {
+                    if (!confirm('¿Estás seguro que deseas salir? Perderás tu progreso actual.')) {
+                        e.preventDefault();
+                    }
+                }
+            });
         });
     </script>
 </body>
